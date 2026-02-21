@@ -7,6 +7,7 @@ export interface Lesson {
   duration?: string;
   type: "video" | "pdf" | "text";
   completed?: boolean;
+  thumbnail?: string;
 }
 
 export interface CourseFolder {
@@ -33,6 +34,7 @@ export const courseFolders: CourseFolder[] = [
         duration: "5 min",
         type: "video",
         completed: true,
+        thumbnail: "intro-welcome",
       },
       {
         id: "intro-2",
@@ -41,6 +43,7 @@ export const courseFolders: CourseFolder[] = [
         duration: "3 min",
         type: "text",
         completed: true,
+        thumbnail: "intro-materials",
       },
       {
         id: "intro-3",
@@ -49,6 +52,7 @@ export const courseFolders: CourseFolder[] = [
         duration: "8 min",
         type: "video",
         completed: false,
+        thumbnail: "intro-tips",
       },
     ],
   },
@@ -64,24 +68,28 @@ export const courseFolders: CourseFolder[] = [
         title: "Palomitas Clássicas",
         description: "A receita tradicional que todo mundo ama",
         type: "pdf",
+        thumbnail: "classicas",
       },
       {
         id: "pdf-2",
         title: "Palomitas de Chocolate",
         description: "Versão irresistível com cobertura de chocolate",
         type: "pdf",
+        thumbnail: "chocolate",
       },
       {
         id: "pdf-3",
         title: "Palomitas de Caramelo",
         description: "Doce e crocante, uma delícia!",
         type: "pdf",
+        thumbnail: "caramelo",
       },
       {
         id: "pdf-4",
         title: "Palomitas Salgadas Gourmet",
         description: "Para quem prefere o sabor salgado refinado",
         type: "pdf",
+        thumbnail: "salgadas",
       },
     ],
   },
@@ -98,6 +106,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Aprenda a fazer as palomitas redonditas originais",
         duration: "15 min",
         type: "video",
+        thumbnail: "classicas",
       },
       {
         id: "video-2",
@@ -105,6 +114,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Técnica de cobertura perfeita com a Carmela",
         duration: "18 min",
         type: "video",
+        thumbnail: "chocolate",
       },
       {
         id: "video-3",
@@ -112,6 +122,7 @@ export const courseFolders: CourseFolder[] = [
         description: "O segredo do caramelo crocante",
         duration: "20 min",
         type: "video",
+        thumbnail: "caramelo",
       },
       {
         id: "video-4",
@@ -119,6 +130,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Receita exclusiva da Carmela",
         duration: "12 min",
         type: "video",
+        thumbnail: "salgadas",
       },
       {
         id: "video-5",
@@ -126,6 +138,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Como embalar para presente ou vender",
         duration: "10 min",
         type: "video",
+        thumbnail: "decoracao",
       },
     ],
   },
