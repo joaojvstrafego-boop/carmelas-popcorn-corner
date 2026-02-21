@@ -27,7 +27,7 @@ const CourseSidebar = ({ activeFolder, onFolderClick }: CourseSidebarProps) => {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
         <p className="text-xs uppercase tracking-wider text-sidebar-foreground/40 px-3 mb-3 font-semibold">
-          Módulos do Curso
+          Módulos del Curso
         </p>
         {courseFolders.map((folder) => {
           const Icon = folder.icon;
@@ -45,7 +45,7 @@ const CourseSidebar = ({ activeFolder, onFolderClick }: CourseSidebarProps) => {
               <Icon className={`w-5 h-5 ${isActive ? "text-sidebar-primary" : ""}`} />
               <div>
                 <p className="text-sm font-medium">{folder.title}</p>
-                <p className="text-xs opacity-60">{folder.lessons.length} aulas</p>
+                <p className="text-xs opacity-60">{folder.lessons.length} clases</p>
               </div>
             </button>
           );
@@ -60,7 +60,7 @@ const CourseSidebar = ({ activeFolder, onFolderClick }: CourseSidebarProps) => {
           </div>
           <div>
             <p className="text-sm font-medium text-sidebar-foreground">Carmela Vega</p>
-            <p className="text-xs text-sidebar-foreground/50">Professora</p>
+            <p className="text-xs text-sidebar-foreground/50">Profesora</p>
           </div>
         </div>
       </div>

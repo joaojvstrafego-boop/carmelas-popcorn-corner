@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Video } from "lucide-react";
+import { BookOpen, Calculator, FileText, Video } from "lucide-react";
 
 export interface Lesson {
   id: string;
@@ -23,15 +23,15 @@ export interface CourseFolder {
 export const courseFolders: CourseFolder[] = [
   {
     id: "introducao",
-    title: "Introdução",
-    description: "Conheça o curso e a professora Carmela Vega",
+    title: "Introducción",
+    description: "Conoce el curso y a la profesora Carmela Vega",
     icon: BookOpen,
     color: "primary",
     lessons: [
       {
         id: "intro-1",
-        title: "Boas-vindas ao curso",
-        description: "Carmela Vega dá as boas-vindas e apresenta o que você vai aprender",
+        title: "Bienvenida al curso",
+        description: "Carmela Vega te da la bienvenida y presenta lo que vas a aprender",
         duration: "5 min",
         type: "video",
         completed: true,
@@ -39,8 +39,8 @@ export const courseFolders: CourseFolder[] = [
       },
       {
         id: "intro-2",
-        title: "Materiais necessários",
-        description: "Lista completa de ingredientes e utensílios que você vai precisar",
+        title: "Materiales necesarios",
+        description: "Lista completa de ingredientes y utensilios que vas a necesitar",
         duration: "3 min",
         type: "text",
         completed: true,
@@ -48,8 +48,8 @@ export const courseFolders: CourseFolder[] = [
       },
       {
         id: "intro-3",
-        title: "Dicas antes de começar",
-        description: "Segredos e truques para palomitas perfeitas",
+        title: "Consejos antes de empezar",
+        description: "Secretos y trucos para palomitas perfectas",
         duration: "8 min",
         type: "video",
         completed: false,
@@ -59,36 +59,36 @@ export const courseFolders: CourseFolder[] = [
   },
   {
     id: "receitas-pdf",
-    title: "Receitas em PDF",
-    description: "Baixe as receitas completas em formato PDF",
+    title: "Recetas en PDF",
+    description: "Descarga las recetas completas en formato PDF",
     icon: FileText,
     color: "accent",
     lessons: [
       {
         id: "pdf-1",
-        title: "Palomitas Clássicas",
-        description: "A receita tradicional que todo mundo ama",
+        title: "Palomitas Clásicas",
+        description: "La receta tradicional que todos aman",
         type: "pdf",
         thumbnail: "classicas",
       },
       {
         id: "pdf-2",
         title: "Palomitas de Chocolate",
-        description: "Versão irresistível com cobertura de chocolate",
+        description: "Versión irresistible con cobertura de chocolate",
         type: "pdf",
         thumbnail: "chocolate",
       },
       {
         id: "pdf-3",
         title: "Palomitas de Caramelo",
-        description: "Doce e crocante, uma delícia!",
+        description: "Dulce y crujiente, ¡una delicia!",
         type: "pdf",
         thumbnail: "caramelo",
       },
       {
         id: "pdf-4",
-        title: "Palomitas Salgadas Gourmet",
-        description: "Para quem prefere o sabor salgado refinado",
+        title: "Palomitas Saladas Gourmet",
+        description: "Para quienes prefieren el sabor salado refinado",
         type: "pdf",
         thumbnail: "salgadas",
       },
@@ -96,23 +96,23 @@ export const courseFolders: CourseFolder[] = [
   },
   {
     id: "receitas-video",
-    title: "Receitas em Vídeo",
-    description: "Acompanhe o passo a passo com a Carmela",
+    title: "Recetas en Video",
+    description: "Sigue el paso a paso con Carmela",
     icon: Video,
     color: "primary",
     lessons: [
       {
         id: "video-1",
         title: "Leche nido (en polvo)",
-        description: "Receita de palomitas com leite nido",
+        description: "Receta de palomitas con leche nido",
         duration: "10 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1lgyL-8qAmqjIl0udiD0-adcJWTQ5ETSN/preview",
       },
       {
         id: "video-2",
-        title: "Leche nido y chocolate con leite",
-        description: "Combinação perfeita de leite nido com chocolate",
+        title: "Leche nido y chocolate con leche",
+        description: "Combinación perfecta de leche nido con chocolate",
         duration: "12 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1w1dNO_ic41QTA5N2WMVDOdvPCqJbaBZs/preview",
@@ -120,7 +120,7 @@ export const courseFolders: CourseFolder[] = [
       {
         id: "video-3",
         title: "Trufa de chocolate",
-        description: "Palomitas com trufa de chocolate irresistível",
+        description: "Palomitas con trufa de chocolate irresistible",
         duration: "15 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1H74PO3m5yOEXpzayUpCKWSqSoePoxNCY/preview",
@@ -128,7 +128,7 @@ export const courseFolders: CourseFolder[] = [
       {
         id: "video-4",
         title: "Ovomaltine / Milo",
-        description: "Sabor especial com Ovomaltine",
+        description: "Sabor especial con Ovomaltine",
         duration: "10 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1MmPq7sEGZwwZo69cPMKqiTuA-e2Zeo6B/preview",
@@ -136,7 +136,7 @@ export const courseFolders: CourseFolder[] = [
       {
         id: "video-5",
         title: "Oreo",
-        description: "Palomitas com Oreo crocante",
+        description: "Palomitas con Oreo crujiente",
         duration: "12 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1Nzjq0mGX_S1t1VLozedgygsaDvotGqlj/preview",
@@ -144,15 +144,15 @@ export const courseFolders: CourseFolder[] = [
       {
         id: "video-6",
         title: "Nutella",
-        description: "A combinação perfeita com Nutella",
+        description: "La combinación perfecta con Nutella",
         duration: "10 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1ybNGQLAvabWUoXpMEFtJGlz_Nnm3KtQb/preview",
       },
       {
         id: "video-7",
-        title: "Maní / Cocahuate",
-        description: "Palomitas com amendoim",
+        title: "Maní / Cacahuate",
+        description: "Palomitas con maní",
         duration: "10 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1uyVXIg5tL9sV9NO2sBVrDNWpRjARKnPE/preview",
@@ -160,7 +160,7 @@ export const courseFolders: CourseFolder[] = [
       {
         id: "video-8",
         title: "Fresa",
-        description: "Sabor morango delicioso",
+        description: "Sabor fresa delicioso",
         duration: "10 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1PgRExc2N4e5aZHZKJrydCsRHtQvdU04l/preview",
@@ -168,18 +168,33 @@ export const courseFolders: CourseFolder[] = [
       {
         id: "video-9",
         title: "Cocada / Coco",
-        description: "Palomitas com coco ralado",
+        description: "Palomitas con coco rallado",
         duration: "10 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1LZKSf6jFq2TOP8OVUYjrkGK6P0mUE2qd/preview",
       },
       {
         id: "video-10",
-        title: "Coco y chocolate con leite",
-        description: "Coco com chocolate ao leite",
+        title: "Coco y chocolate con leche",
+        description: "Coco con chocolate con leche",
         duration: "12 min",
         type: "video",
         videoUrl: "https://drive.google.com/file/d/1u2FInwMpt159rjLLUId-y2U6R1KgOENf/preview",
+      },
+    ],
+  },
+  {
+    id: "calculadora",
+    title: "Calculadora",
+    description: "Calcula el precio de tus palomitas",
+    icon: Calculator,
+    color: "accent",
+    lessons: [
+      {
+        id: "calc-1",
+        title: "Calculadora de Precios",
+        description: "Herramienta para calcular el precio ideal de tus palomitas",
+        type: "text",
       },
     ],
   },

@@ -17,6 +17,7 @@ const folderCovers: Record<string, string> = {
   introducao: coverIntro,
   "receitas-pdf": coverPdf,
   "receitas-video": coverVideo,
+  calculadora: coverPdf,
 };
 
 const thumbnailMap: Record<string, string> = {
@@ -52,7 +53,7 @@ const FolderCard = ({ folder, onClick }: { folder: CourseFolder; onClick: () => 
             {folder.title}
           </h4>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {folder.lessons.length} aulas
+            {folder.lessons.length} clases
           </p>
         </div>
         {/* Hover play icon */}
@@ -177,7 +178,7 @@ const ContentRows = () => {
       {/* Folder covers row */}
       <div className="mb-10">
         <h3 className="font-display text-xl md:text-2xl tracking-wider text-foreground px-4 md:px-12 mb-3">
-          MÓDULOS DO CURSO
+          MÓDULOS DEL CURSO
         </h3>
         <ScrollRow>
           {courseFolders.map((folder) => (
@@ -204,7 +205,7 @@ const ContentRows = () => {
               {activeFolder.title}
             </h3>
             <span className="text-xs text-muted-foreground">
-              {activeFolder.lessons.length} aulas
+              {activeFolder.lessons.length} clases
             </span>
           </div>
           <ScrollRow>
@@ -215,8 +216,27 @@ const ContentRows = () => {
         </div>
       )}
 
+      {/* Calculator embed */}
+      {playingLesson?.id === "calc-1" && (
+        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col items-center justify-center" onClick={() => setPlayingLesson(null)}>
+          <div className="w-full max-w-5xl h-[85vh] px-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl md:text-2xl tracking-wider text-foreground">Calculadora de Precios</h2>
+              <button onClick={() => setPlayingLesson(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <iframe
+              src="https://dulce-pop-calculadora.lovable.app"
+              className="w-full h-full rounded-lg border border-border"
+              title="Calculadora de Precios"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Video player modal */}
-      {playingLesson?.videoUrl && (
+      {playingLesson?.videoUrl && playingLesson?.id !== "calc-1" && (
         <VideoPlayer lesson={playingLesson} onClose={() => setPlayingLesson(null)} />
       )}
     </div>

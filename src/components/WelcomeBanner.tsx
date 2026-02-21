@@ -12,13 +12,13 @@ const WelcomeBanner = () => {
       <div className="absolute inset-0 flex items-center p-8">
         <div>
           <p className="text-primary-foreground/80 text-sm font-medium mb-1 tracking-wide uppercase">
-            Bem-vinda de volta 👋
+            Bienvenida de vuelta 👋
           </p>
           <h1 className="text-3xl font-display font-bold text-primary-foreground mb-2">
             Palomitas Redonditas
           </h1>
           <p className="text-primary-foreground/70 text-sm max-w-md">
-            Com a professora <span className="font-semibold text-primary-foreground">Carmela Vega</span>. Continue de onde parou e domine a arte das palomitas perfeitas!
+            Con la profesora <span className="font-semibold text-primary-foreground">Carmela Vega</span>. Continúa donde lo dejaste y domina el arte de las palomitas perfectas.
           </p>
         </div>
       </div>
