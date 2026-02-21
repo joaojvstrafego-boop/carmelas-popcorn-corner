@@ -235,6 +235,25 @@ const ContentRows = () => {
         </div>
       )}
 
+      {/* PDF viewer modal */}
+      {playingLesson?.type === "pdf" && (
+        <div className="fixed inset-0 z-50 bg-background/95 flex flex-col items-center justify-center" onClick={() => setPlayingLesson(null)}>
+          <div className="w-full max-w-5xl h-[85vh] px-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl md:text-2xl tracking-wider text-foreground">{playingLesson.title}</h2>
+              <button onClick={() => setPlayingLesson(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <iframe
+              src="/PALOMITAS_REDONDITAS.pdf"
+              className="w-full h-full rounded-lg border border-border"
+              title={playingLesson.title}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Video player modal */}
       {playingLesson?.videoUrl && playingLesson?.id !== "calc-1" && (
         <VideoPlayer lesson={playingLesson} onClose={() => setPlayingLesson(null)} />
