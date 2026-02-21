@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X } from "lucide-react";
 import { courseFolders, type CourseFolder, type Lesson } from "@/data/courseData";
 
 import coverIntro from "@/assets/cover-introducao.jpg";
@@ -67,11 +67,14 @@ const FolderCard = ({ folder, onClick }: { folder: CourseFolder; onClick: () => 
 };
 
 // --- Lesson Card (horizontal, shown inside open folder) ---
-const LessonCard = ({ lesson }: { lesson: Lesson }) => {
+const LessonCard = ({ lesson, onPlay }: { lesson: Lesson; onPlay: (lesson: Lesson) => void }) => {
   const thumb = lesson.thumbnail ? thumbnailMap[lesson.thumbnail] : heroBanner;
 
   return (
-    <div className="group relative flex-shrink-0 w-[240px] md:w-[280px] cursor-pointer">
+    <div
+      className="group relative flex-shrink-0 w-[240px] md:w-[280px] cursor-pointer"
+      onClick={() => onPlay(lesson)}
+    >
       <div className="relative aspect-video rounded-md overflow-hidden bg-card mb-2">
         <img
           src={thumb}
@@ -110,6 +113,30 @@ const LessonCard = ({ lesson }: { lesson: Lesson }) => {
   );
 };
 
+// --- Video Player Modal ---
+const VideoPlayer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) => (
+  <div className="fixed inset-0 z-50 bg-background/95 flex flex-col items-center justify-center" onClick={onClose}>
+    <div className="w-full max-w-4xl px-4" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-xl md:text-2xl tracking-wider text-foreground">{lesson.title}</h2>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+      <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
+        <iframe
+          src={lesson.videoUrl}
+          className="w-full h-full"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          title={lesson.title}
+        />
+      </div>
+      <p className="text-sm text-muted-foreground mt-3">{lesson.description}</p>
+    </div>
+  </div>
+);
+
 // --- Scrollable Row ---
 const ScrollRow = ({ children }: { children: React.ReactNode }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -141,6 +168,7 @@ const ScrollRow = ({ children }: { children: React.ReactNode }) => {
 // --- Main Content Section ---
 const ContentRows = () => {
   const [openFolder, setOpenFolder] = useState<string | null>(null);
+  const [playingLesson, setPlayingLesson] = useState<Lesson | null>(null);
 
   const activeFolder = openFolder ? courseFolders.find((f) => f.id === openFolder) : null;
 
@@ -181,10 +209,15 @@ const ContentRows = () => {
           </div>
           <ScrollRow>
             {activeFolder.lessons.map((lesson) => (
-              <LessonCard key={lesson.id} lesson={lesson} />
+              <LessonCard key={lesson.id} lesson={lesson} onPlay={setPlayingLesson} />
             ))}
           </ScrollRow>
         </div>
+      )}
+
+      {/* Video player modal */}
+      {playingLesson?.videoUrl && (
+        <VideoPlayer lesson={playingLesson} onClose={() => setPlayingLesson(null)} />
       )}
     </div>
   );
