@@ -75,7 +75,7 @@ const FolderContent = ({ folderId }: FolderContentProps) => {
         {completedCount > 0 && (
           <div className="mt-4">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Progresso</span>
+              <span className="text-muted-foreground">Progreso</span>
               <span className="font-medium text-foreground">
                 {completedCount}/{folder.lessons.length}
               </span>

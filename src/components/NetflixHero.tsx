@@ -16,10 +16,10 @@ const NetflixHero = () => {
           PALOMITAS REDONDITAS
         </h1>
         <p className="text-sm md:text-base text-muted-foreground mb-1 font-medium">
-          Com a professora Carmela Vega
+          Con la profesora Carmela Vega
         </p>
         <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-          Domine a arte das palomitas perfeitas. Receitas exclusivas, técnicas profissionais e segredos que vão transformar suas palomitas.
+          Domina el arte de las palomitas perfectas. Recetas exclusivas, técnicas profesionales y secretos que transformarán tus palomitas.
         </p>
       </div>
     </div>
