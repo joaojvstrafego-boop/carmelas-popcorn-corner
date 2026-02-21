@@ -1,28 +1,23 @@
-import { useState } from "react";
-import CourseSidebar from "@/components/CourseSidebar";
-import MobileSidebar from "@/components/MobileSidebar";
-import WelcomeBanner from "@/components/WelcomeBanner";
-import FolderContent from "@/components/FolderContent";
+import NetflixNavbar from "@/components/NetflixNavbar";
+import NetflixHero from "@/components/NetflixHero";
+import ContentRow from "@/components/ContentRow";
+import { courseFolders } from "@/data/courseData";
 
 const Index = () => {
-  const [activeFolder, setActiveFolder] = useState("introducao");
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile nav */}
-      <MobileSidebar activeFolder={activeFolder} onFolderClick={setActiveFolder} />
+      <NetflixNavbar />
+      <NetflixHero />
 
-      <div className="flex">
-        {/* Desktop sidebar */}
-        <div className="hidden lg:block">
-          <CourseSidebar activeFolder={activeFolder} onFolderClick={setActiveFolder} />
-        </div>
-
-        {/* Main content */}
-        <main className="flex-1 p-6 lg:p-10 max-w-4xl">
-          <WelcomeBanner />
-          <FolderContent folderId={activeFolder} />
-        </main>
+      {/* Content rows - pulled up over hero */}
+      <div className="-mt-20 relative z-10 pb-16">
+        {courseFolders.map((folder) => (
+          <ContentRow
+            key={folder.id}
+            title={folder.title}
+            lessons={folder.lessons}
+          />
+        ))}
       </div>
     </div>
   );
