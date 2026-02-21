@@ -66,31 +66,10 @@ export const courseFolders: CourseFolder[] = [
     lessons: [
       {
         id: "pdf-1",
-        title: "Palomitas Clásicas",
-        description: "La receta tradicional que todos aman",
+        title: "Recetas Completas",
+        description: "Todas las recetas de palomitas gourmet en un solo PDF",
         type: "pdf",
         thumbnail: "classicas",
-      },
-      {
-        id: "pdf-2",
-        title: "Palomitas de Chocolate",
-        description: "Versión irresistible con cobertura de chocolate",
-        type: "pdf",
-        thumbnail: "chocolate",
-      },
-      {
-        id: "pdf-3",
-        title: "Palomitas de Caramelo",
-        description: "Dulce y crujiente, ¡una delicia!",
-        type: "pdf",
-        thumbnail: "caramelo",
-      },
-      {
-        id: "pdf-4",
-        title: "Palomitas Saladas Gourmet",
-        description: "Para quienes prefieren el sabor salado refinado",
-        type: "pdf",
-        thumbnail: "salgadas",
       },
     ],
   },
