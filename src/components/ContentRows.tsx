@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink, Volume2 } from "lucide-react";
 import { courseFolders, type CourseFolder, type Lesson } from "@/data/courseData";
 
 import coverIntro from "@/assets/cover-introducao.jpg";
@@ -86,6 +86,8 @@ const LessonCard = ({ lesson, onPlay }: { lesson: Lesson; onPlay: (lesson: Lesso
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             {lesson.type === "pdf" ? (
               <Download className="w-10 h-10 text-foreground drop-shadow-lg" />
+            ) : lesson.type === "audio" ? (
+              <Volume2 className="w-10 h-10 text-foreground drop-shadow-lg" />
             ) : (
               <Play className="w-12 h-12 text-foreground fill-foreground drop-shadow-lg" />
             )}
@@ -133,6 +135,29 @@ const VideoPlayer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
         />
       </div>
       <p className="text-sm text-muted-foreground mt-3">{lesson.description}</p>
+    </div>
+  </div>
+);
+
+// --- Audio Player Modal ---
+const AudioPlayer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) => (
+  <div className="fixed inset-0 z-50 bg-background/95 flex flex-col items-center justify-center" onClick={onClose}>
+    <div className="w-full max-w-lg px-4" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="font-display text-xl md:text-2xl tracking-wider text-foreground">{lesson.title}</h2>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+      <div className="bg-card border border-border rounded-xl p-8 flex flex-col items-center gap-6">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+          <Volume2 className="w-10 h-10 text-primary" />
+        </div>
+        <p className="text-sm text-muted-foreground text-center">{lesson.description}</p>
+        <audio controls autoPlay className="w-full" src="/audio-intro.mp3">
+          Tu navegador no soporta audio.
+        </audio>
+      </div>
     </div>
   </div>
 );
@@ -276,6 +301,8 @@ const FolderView = ({
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {lesson.type === "pdf" ? (
                       <FileText className="w-8 h-8 text-foreground drop-shadow-lg" />
+                    ) : lesson.type === "audio" ? (
+                      <Volume2 className="w-8 h-8 text-foreground drop-shadow-lg" />
                     ) : (
                       <Play className="w-10 h-10 text-foreground fill-foreground drop-shadow-lg" />
                     )}
@@ -346,6 +373,11 @@ const ContentRows = () => {
         {/* PDF viewer */}
         {playingLesson?.type === "pdf" && (
           <PdfViewer lesson={playingLesson} onClose={() => setPlayingLesson(null)} />
+        )}
+
+        {/* Audio player */}
+        {playingLesson?.type === "audio" && (
+          <AudioPlayer lesson={playingLesson} onClose={() => setPlayingLesson(null)} />
         )}
 
         {/* Video player */}
