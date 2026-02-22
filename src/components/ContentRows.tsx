@@ -241,13 +241,14 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
           </button>
         </div>
       </div>
-      {/* PDF embed using native browser viewer */}
-      <div className="flex-1 w-full">
-        <iframe
-          src={pdfUrl}
-          className="w-full h-full border-0"
-          title={lesson.title}
-        />
+      {/* PDF action area */}
+      <div className="flex-1 w-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <FileText className="w-10 h-10 text-primary" />
+          </div>
+          <p className="text-muted-foreground text-sm">Usa los botones de arriba para descargar o abrir el PDF</p>
+        </div>
       </div>
     </div>
   );
@@ -345,9 +346,16 @@ const FolderView = ({
             </div>
           </div>
         ) : isPdfFolder ? (
-          /* PDF embedded directly */
-          <div className="w-full max-w-5xl mx-auto">
-            <div className="flex items-center justify-end gap-2 mb-3">
+          /* PDF action buttons - embedding doesn't work reliably in PWAs */
+          <div className="w-full max-w-md mx-auto flex flex-col items-center gap-6 py-8">
+            <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <FileText className="w-12 h-12 text-primary" />
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-display tracking-wider text-foreground">Recetas Completas</h3>
+              <p className="text-sm text-muted-foreground">Todas las recetas de palomitas gourmet en PDF</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
               <button
                 onClick={() => {
                   const link = document.createElement('a');
@@ -357,26 +365,21 @@ const FolderView = ({
                   link.click();
                   document.body.removeChild(link);
                 }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
               >
-                <Download className="w-4 h-4" />
-                <span>Descargar</span>
+                <Download className="w-5 h-5" />
+                <span>Descargar PDF</span>
               </button>
               <a
                 href="/PALOMITAS_REDONDITAS.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-foreground text-sm hover:bg-muted/80 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-muted text-foreground font-medium hover:bg-muted/80 transition-colors"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span>Abrir</span>
+                <ExternalLink className="w-5 h-5" />
+                <span>Abrir en nueva pestaña</span>
               </a>
             </div>
-            <iframe
-              src="/PALOMITAS_REDONDITAS.pdf"
-              className="w-full h-[70vh] rounded-lg border border-border"
-              title="Recetas en PDF"
-            />
           </div>
         ) : isAudioFolder ? (
           /* Audio inline player */
