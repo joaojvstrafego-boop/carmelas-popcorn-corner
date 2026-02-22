@@ -184,60 +184,64 @@ const AudioPlayer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
 );
 
 // --- PDF Viewer Modal ---
-const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) => (
-  <div className="fixed inset-0 z-50 bg-background flex flex-col">
-    {/* Top bar */}
-    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm hidden sm:inline">Volver al menú</span>
-        </button>
-        <div className="h-5 w-px bg-border hidden sm:block" />
+const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) => {
+  const pdfUrl = `/PALOMITAS_REDONDITAS.pdf`;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm hidden sm:inline">Volver al menú</span>
+          </button>
+          <div className="h-5 w-px bg-border hidden sm:block" />
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-primary" />
+            <h2 className="font-display text-base md:text-lg tracking-wider text-foreground">{lesson.title}</h2>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-primary" />
-          <h2 className="font-display text-base md:text-lg tracking-wider text-foreground">{lesson.title}</h2>
+          <a
+            href={pdfUrl}
+            download="PALOMITAS_REDONDITAS.pdf"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Descargar</span>
+          </a>
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-foreground text-sm hover:bg-muted/80 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span className="hidden sm:inline">Abrir</span>
+          </a>
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors ml-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <a
-          href="/PALOMITAS_REDONDITAS.pdf"
-          download="PALOMITAS_REDONDITAS.pdf"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Descargar</span>
-        </a>
-        <a
-          href="/PALOMITAS_REDONDITAS.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-foreground text-sm hover:bg-muted/80 transition-colors"
-        >
-          <ExternalLink className="w-4 h-4" />
-          <span className="hidden sm:inline">Abrir</span>
-        </a>
-        <button
-          onClick={onClose}
-          className="text-muted-foreground hover:text-foreground transition-colors ml-1"
-        >
-          <X className="w-5 h-5" />
-        </button>
+      {/* PDF embed using Google Docs viewer for reliable rendering */}
+      <div className="flex-1 w-full">
+        <iframe
+          src={`https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + pdfUrl)}&embedded=true`}
+          className="w-full h-full border-0"
+          title={lesson.title}
+        />
       </div>
     </div>
-    {/* PDF embed */}
-    <div className="flex-1 w-full">
-      <iframe
-        src="/PALOMITAS_REDONDITAS.pdf#toolbar=1&navpanes=0"
-        className="w-full h-full border-0"
-        title={lesson.title}
-      />
-    </div>
-  </div>
-);
+  );
+};
 
 // --- Scrollable Row ---
 const ScrollRow = ({ children }: { children: React.ReactNode }) => {
@@ -278,6 +282,7 @@ const FolderView = ({
   onPlayLesson: (lesson: Lesson) => void;
 }) => {
   const cover = folderCovers[folder.id] || heroBanner;
+  const isAudioFolder = folder.lessons.every((l) => l.type === "audio");
 
   return (
     <div className="animate-fade-in pb-16">
@@ -297,59 +302,82 @@ const FolderView = ({
             {folder.title}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {folder.description} · {folder.lessons.length} clases
+            {folder.description}
           </p>
         </div>
       </div>
 
-      {/* Lessons grid */}
+      {/* Content */}
       <div className="px-4 md:px-12">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {folder.lessons.map((lesson) => (
-            <div
-              key={lesson.id}
-              className="group cursor-pointer"
-              onClick={() => onPlayLesson(lesson)}
-            >
-              <div className="relative aspect-video rounded-md overflow-hidden bg-card mb-2">
-                <img
-                  src={lesson.thumbnail ? thumbnailMap[lesson.thumbnail] : heroBanner}
-                  alt={lesson.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors duration-300 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {lesson.type === "pdf" ? (
-                      <FileText className="w-8 h-8 text-foreground drop-shadow-lg" />
-                    ) : lesson.type === "audio" ? (
-                      <Volume2 className="w-8 h-8 text-foreground drop-shadow-lg" />
-                    ) : (
-                      <Play className="w-10 h-10 text-foreground fill-foreground drop-shadow-lg" />
-                    )}
+        {isAudioFolder ? (
+          /* Audio inline player */
+          <div className="max-w-2xl mx-auto space-y-6">
+            {folder.lessons.map((lesson) => (
+              <div key={lesson.id} className="bg-card border border-border rounded-xl p-6 md:p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Volume2 className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg md:text-xl tracking-wider text-foreground">
+                      {lesson.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">{lesson.description}</p>
                   </div>
                 </div>
-                {lesson.duration && (
-                  <div className="absolute bottom-1 right-1 flex items-center gap-1 bg-background/80 text-foreground text-[10px] px-1.5 py-0.5 rounded">
-                    <Clock className="w-2.5 h-2.5" />
-                    {lesson.duration}
-                  </div>
-                )}
-                {lesson.completed && (
-                  <div className="absolute top-1 right-1">
-                    <CheckCircle2 className="w-4 h-4 text-accent" />
-                  </div>
-                )}
+                <audio controls className="w-full" src="/audio-intro.mp3">
+                  Tu navegador no soporta audio.
+                </audio>
               </div>
-              <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                {lesson.title}
-              </h4>
-              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                {lesson.description}
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          /* Normal lessons grid */
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {folder.lessons.map((lesson) => (
+              <div
+                key={lesson.id}
+                className="group cursor-pointer"
+                onClick={() => onPlayLesson(lesson)}
+              >
+                <div className="relative aspect-video rounded-md overflow-hidden bg-card mb-2">
+                  <img
+                    src={lesson.thumbnail ? thumbnailMap[lesson.thumbnail] : heroBanner}
+                    alt={lesson.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {lesson.type === "pdf" ? (
+                        <FileText className="w-8 h-8 text-foreground drop-shadow-lg" />
+                      ) : (
+                        <Play className="w-10 h-10 text-foreground fill-foreground drop-shadow-lg" />
+                      )}
+                    </div>
+                  </div>
+                  {lesson.duration && (
+                    <div className="absolute bottom-1 right-1 flex items-center gap-1 bg-background/80 text-foreground text-[10px] px-1.5 py-0.5 rounded">
+                      <Clock className="w-2.5 h-2.5" />
+                      {lesson.duration}
+                    </div>
+                  )}
+                  {lesson.completed && (
+                    <div className="absolute top-1 right-1">
+                      <CheckCircle2 className="w-4 h-4 text-accent" />
+                    </div>
+                  )}
+                </div>
+                <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                  {lesson.title}
+                </h4>
+                <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                  {lesson.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
