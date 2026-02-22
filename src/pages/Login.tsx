@@ -1,24 +1,45 @@
 import { useState } from "react";
-import { ChefHat, Smartphone, Share, PlusSquare, MoreVertical, Download } from "lucide-react";
+import { ChefHat, Smartphone, Share, PlusSquare, MoreVertical, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
-interface LoginProps {
-  onLogin: () => void;
-}
-
-const Login = ({ onLogin }: LoginProps) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === "1234") {
-      localStorage.setItem("palomitas_logged", "true");
-      onLogin();
-    } else {
-      setError("Contraseña incorrecta. Intenta con: 1234");
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          if (error.message.includes("already registered")) {
+            setError("Este correo ya está registrado. Inicia sesión.");
+          } else {
+            setError(error.message);
+          }
+        } else {
+          setSuccess("¡Cuenta creada! Ya puedes acceder al curso.");
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          setError("Correo o contraseña incorrectos.");
+        }
+      }
+    } catch {
+      setError("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,7 +58,7 @@ const Login = ({ onLogin }: LoginProps) => {
       {/* Login Card */}
       <div className="w-full max-w-sm bg-card rounded-xl p-6 border border-border mb-8">
         <h2 className="font-display text-2xl text-center text-foreground mb-6">
-          INICIAR SESIÓN
+          {isSignUp ? "CREAR CUENTA" : "INICIAR SESIÓN"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
@@ -49,19 +70,24 @@ const Login = ({ onLogin }: LoginProps) => {
           />
           <Input
             type="password"
-            placeholder="Contraseña"
+            placeholder="Contraseña (mínimo 6 caracteres)"
             value={password}
             onChange={(e) => { setPassword(e.target.value); setError(""); }}
             required
+            minLength={6}
           />
           {error && <p className="text-destructive text-sm">{error}</p>}
-          <Button type="submit" className="w-full">
-            Entrar
+          {success && <p className="text-accent text-sm">{success}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isSignUp ? "Crear cuenta" : "Entrar"}
           </Button>
         </form>
-        <p className="text-muted-foreground text-xs text-center mt-4">
-          🔑 La contraseña es: <span className="text-foreground font-semibold">1234</span>
-        </p>
+        <button
+          onClick={() => { setIsSignUp(!isSignUp); setError(""); setSuccess(""); }}
+          className="text-muted-foreground text-sm text-center mt-4 w-full hover:text-foreground transition-colors"
+        >
+          {isSignUp ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate"}
+        </button>
       </div>
 
       {/* Install Instructions */}
