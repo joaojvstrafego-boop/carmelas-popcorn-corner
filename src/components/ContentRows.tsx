@@ -284,6 +284,7 @@ const FolderView = ({
   const cover = folderCovers[folder.id] || heroBanner;
   const isAudioFolder = folder.lessons.every((l) => l.type === "audio");
   const isCalculadora = folder.id === "calculadora";
+  const isPdfFolder = folder.id === "receitas-pdf";
 
   return (
     <div className="animate-fade-in pb-16">
@@ -317,6 +318,34 @@ const FolderView = ({
               src="https://dulce-pop-calculadora.lovable.app"
               className="w-full h-[70vh] rounded-lg border border-border"
               title="Calculadora de Precios"
+            />
+          </div>
+        ) : isPdfFolder ? (
+          /* PDF embedded directly */
+          <div className="w-full max-w-5xl mx-auto">
+            <div className="flex items-center justify-end gap-2 mb-3">
+              <a
+                href="/PALOMITAS_REDONDITAS.pdf"
+                download="PALOMITAS_REDONDITAS.pdf"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar</span>
+              </a>
+              <a
+                href="/PALOMITAS_REDONDITAS.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted text-foreground text-sm hover:bg-muted/80 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Abrir</span>
+              </a>
+            </div>
+            <iframe
+              src={`https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + "/PALOMITAS_REDONDITAS.pdf")}&embedded=true`}
+              className="w-full h-[70vh] rounded-lg border border-border"
+              title="Recetas en PDF"
             />
           </div>
         ) : isAudioFolder ? (
