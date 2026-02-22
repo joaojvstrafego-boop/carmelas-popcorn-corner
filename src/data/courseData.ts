@@ -57,8 +57,8 @@ export const courseFolders: CourseFolder[] = [
   },
   {
     id: "caramelizacion",
-    title: "Caramelización (Assista antes de começar)",
-    description: "Assista antes das receitas doces",
+    title: "Caramelización (Mira antes de empezar)",
+    description: "Mira este video antes de las recetas dulces",
     icon: Video,
     color: "primary",
     lessons: [
@@ -73,7 +73,7 @@ export const courseFolders: CourseFolder[] = [
   },
   {
     id: "receitas-video",
-    title: "Recetas en Video",
+    title: "Recetas Dulces en Video",
     description: "Sigue el paso a paso con Carmela",
     icon: Video,
     color: "primary",
