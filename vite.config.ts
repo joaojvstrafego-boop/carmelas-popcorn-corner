@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/~oauth/],
       },
       manifest: {
-        name: "Palomitas Redonditas",
+        name: "Palomitas Carmela Vega",
         short_name: "Palomitas",
         description: "Curso de palomitas gourmet con Carmela Vega",
         theme_color: "#1a1a2e",
