@@ -95,6 +95,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Receta de palomitas con leche nido",
         duration: "10 min",
         type: "video",
+        thumbnail: "leche-nido",
         videoUrl: "https://drive.google.com/file/d/1lgyL-8qAmqjIl0udiD0-adcJWTQ5ETSN/preview",
       },
       {
@@ -103,6 +104,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Combinación perfecta de leche nido con chocolate",
         duration: "12 min",
         type: "video",
+        thumbnail: "leche-choco",
         videoUrl: "https://drive.google.com/file/d/1w1dNO_ic41QTA5N2WMVDOdvPCqJbaBZs/preview",
       },
       {
@@ -111,6 +113,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Palomitas con trufa de chocolate irresistible",
         duration: "15 min",
         type: "video",
+        thumbnail: "trufa",
         videoUrl: "https://drive.google.com/file/d/1H74PO3m5yOEXpzayUpCKWSqSoePoxNCY/preview",
       },
       {
@@ -119,6 +122,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Sabor especial con Ovomaltine",
         duration: "10 min",
         type: "video",
+        thumbnail: "ovomaltine",
         videoUrl: "https://drive.google.com/file/d/1MmPq7sEGZwwZo69cPMKqiTuA-e2Zeo6B/preview",
       },
       {
@@ -127,6 +131,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Palomitas con Oreo crujiente",
         duration: "12 min",
         type: "video",
+        thumbnail: "oreo",
         videoUrl: "https://drive.google.com/file/d/1Nzjq0mGX_S1t1VLozedgygsaDvotGqlj/preview",
       },
       {
@@ -135,6 +140,7 @@ export const courseFolders: CourseFolder[] = [
         description: "La combinación perfecta con Nutella",
         duration: "10 min",
         type: "video",
+        thumbnail: "nutella",
         videoUrl: "https://drive.google.com/file/d/1ybNGQLAvabWUoXpMEFtJGlz_Nnm3KtQb/preview",
       },
       {
@@ -143,6 +149,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Palomitas con maní",
         duration: "10 min",
         type: "video",
+        thumbnail: "mani",
         videoUrl: "https://drive.google.com/file/d/1uyVXIg5tL9sV9NO2sBVrDNWpRjARKnPE/preview",
       },
       {
@@ -151,6 +158,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Sabor fresa delicioso",
         duration: "10 min",
         type: "video",
+        thumbnail: "fresa",
         videoUrl: "https://drive.google.com/file/d/1PgRExc2N4e5aZHZKJrydCsRHtQvdU04l/preview",
       },
       {
@@ -159,6 +167,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Palomitas con coco rallado",
         duration: "10 min",
         type: "video",
+        thumbnail: "coco",
         videoUrl: "https://drive.google.com/file/d/1LZKSf6jFq2TOP8OVUYjrkGK6P0mUE2qd/preview",
       },
       {
@@ -167,6 +176,7 @@ export const courseFolders: CourseFolder[] = [
         description: "Coco con chocolate con leche",
         duration: "12 min",
         type: "video",
+        thumbnail: "coco-choco",
         videoUrl: "https://drive.google.com/file/d/1u2FInwMpt159rjLLUId-y2U6R1KgOENf/preview",
       },
     ],

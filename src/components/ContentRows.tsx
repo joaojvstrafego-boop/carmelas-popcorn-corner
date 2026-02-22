@@ -2,9 +2,10 @@ import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink, Volume2 } from "lucide-react";
 import { courseFolders, type CourseFolder, type Lesson } from "@/data/courseData";
 
-import coverIntro from "@/assets/cover-introducao.jpg";
-import coverPdf from "@/assets/cover-receitas-pdf.jpg";
+import coverEmpieza from "@/assets/cover-empieza.jpg";
+import coverPdfReal from "@/assets/cover-pdf-real.jpg";
 import coverVideo from "@/assets/cover-receitas-video.jpg";
+import coverCalculadora from "@/assets/cover-calculadora.jpg";
 
 import thumbClassicas from "@/assets/thumb-classicas.jpg";
 import thumbChocolate from "@/assets/thumb-chocolate.jpg";
@@ -12,12 +13,22 @@ import thumbCaramelo from "@/assets/thumb-caramelo.jpg";
 import thumbSalgadas from "@/assets/thumb-salgadas.jpg";
 import thumbDecoracao from "@/assets/thumb-decoracao.jpg";
 import heroBanner from "@/assets/hero-banner.jpg";
+import thumbLecheNido from "@/assets/thumb-leche-nido.jpg";
+import thumbLecheChoco from "@/assets/thumb-leche-choco.jpg";
+import thumbTrufa from "@/assets/thumb-trufa.jpg";
+import thumbOvomaltine from "@/assets/thumb-ovomaltine.jpg";
+import thumbOreo from "@/assets/thumb-oreo.jpg";
+import thumbNutella from "@/assets/thumb-nutella.jpg";
+import thumbMani from "@/assets/thumb-mani.jpg";
+import thumbFresa from "@/assets/thumb-fresa.jpg";
+import thumbCoco from "@/assets/thumb-coco.jpg";
+import thumbCocoChoco from "@/assets/thumb-coco-choco.jpg";
 
 const folderCovers: Record<string, string> = {
-  introducao: coverIntro,
-  "receitas-pdf": coverPdf,
+  introducao: coverEmpieza,
+  "receitas-pdf": coverPdfReal,
   "receitas-video": coverVideo,
-  calculadora: coverPdf,
+  calculadora: coverCalculadora,
 };
 
 const thumbnailMap: Record<string, string> = {
@@ -29,6 +40,16 @@ const thumbnailMap: Record<string, string> = {
   "intro-welcome": heroBanner,
   "intro-materials": thumbClassicas,
   "intro-tips": thumbChocolate,
+  "leche-nido": thumbLecheNido,
+  "leche-choco": thumbLecheChoco,
+  trufa: thumbTrufa,
+  ovomaltine: thumbOvomaltine,
+  oreo: thumbOreo,
+  nutella: thumbNutella,
+  mani: thumbMani,
+  fresa: thumbFresa,
+  coco: thumbCoco,
+  "coco-choco": thumbCocoChoco,
 };
 
 // --- Folder Card (poster style) ---
