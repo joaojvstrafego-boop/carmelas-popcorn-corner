@@ -56,6 +56,22 @@ export const courseFolders: CourseFolder[] = [
     ],
   },
   {
+    id: "caramelizacion",
+    title: "Caramelización",
+    description: "Assista antes das receitas doces",
+    icon: Video,
+    color: "primary",
+    lessons: [
+      {
+        id: "caramel-1",
+        title: "Técnica de Caramelización",
+        description: "Aprende la técnica base antes de las recetas dulces",
+        type: "video",
+        videoUrl: "https://drive.google.com/file/d/14vScNxWUUyX9vYfaoL_Ne6vvJe0UDMxz/preview",
+      },
+    ],
+  },
+  {
     id: "receitas-video",
     title: "Recetas en Video",
     description: "Sigue el paso a paso con Carmela",
