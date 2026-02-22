@@ -283,6 +283,7 @@ const FolderView = ({
 }) => {
   const cover = folderCovers[folder.id] || heroBanner;
   const isAudioFolder = folder.lessons.every((l) => l.type === "audio");
+  const isCalculadora = folder.id === "calculadora";
 
   return (
     <div className="animate-fade-in pb-16">
@@ -309,7 +310,16 @@ const FolderView = ({
 
       {/* Content */}
       <div className="px-4 md:px-12">
-        {isAudioFolder ? (
+        {isCalculadora ? (
+          /* Calculator embedded directly */
+          <div className="w-full max-w-5xl mx-auto">
+            <iframe
+              src="https://dulce-pop-calculadora.lovable.app"
+              className="w-full h-[70vh] rounded-lg border border-border"
+              title="Calculadora de Precios"
+            />
+          </div>
+        ) : isAudioFolder ? (
           /* Audio inline player */
           <div className="max-w-2xl mx-auto space-y-6">
             {folder.lessons.map((lesson) => (
@@ -399,25 +409,6 @@ const ContentRows = () => {
           onBack={() => setOpenFolder(null)}
           onPlayLesson={setPlayingLesson}
         />
-
-        {/* Calculator embed */}
-        {playingLesson?.id === "calc-1" && (
-          <div className="fixed inset-0 z-50 bg-background/95 flex flex-col items-center justify-center" onClick={() => setPlayingLesson(null)}>
-            <div className="w-full max-w-5xl h-[85vh] px-4" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-xl md:text-2xl tracking-wider text-foreground">Calculadora de Precios</h2>
-                <button onClick={() => setPlayingLesson(null)} className="text-muted-foreground hover:text-foreground transition-colors">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <iframe
-                src="https://dulce-pop-calculadora.lovable.app"
-                className="w-full h-full rounded-lg border border-border"
-                title="Calculadora de Precios"
-              />
-            </div>
-          </div>
-        )}
 
         {/* PDF viewer */}
         {playingLesson?.type === "pdf" && (
