@@ -57,7 +57,7 @@ export const courseFolders: CourseFolder[] = [
   },
   {
     id: "caramelizacion",
-    title: "Caramelización",
+    title: "Caramelización (Assista antes de começar)",
     description: "Assista antes das receitas doces",
     icon: Video,
     color: "primary",
