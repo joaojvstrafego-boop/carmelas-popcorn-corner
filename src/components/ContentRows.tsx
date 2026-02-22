@@ -189,6 +189,15 @@ const AudioPlayer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
 const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) => {
   const pdfUrl = `/PALOMITAS_REDONDITAS.pdf`;
 
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = 'PALOMITAS_REDONDITAS.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {/* Top bar */}
@@ -208,14 +217,13 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href={pdfUrl}
-            download="PALOMITAS_REDONDITAS.pdf"
+          <button
+            onClick={handleDownload}
             className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Descargar</span>
-          </a>
+          </button>
           <a
             href={pdfUrl}
             target="_blank"
@@ -233,10 +241,10 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
           </button>
         </div>
       </div>
-      {/* PDF embed using Google Docs viewer for reliable rendering */}
+      {/* PDF embed using native browser viewer */}
       <div className="flex-1 w-full">
         <iframe
-          src={`https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + pdfUrl)}&embedded=true`}
+          src={pdfUrl}
           className="w-full h-full border-0"
           title={lesson.title}
         />
@@ -340,14 +348,20 @@ const FolderView = ({
           /* PDF embedded directly */
           <div className="w-full max-w-5xl mx-auto">
             <div className="flex items-center justify-end gap-2 mb-3">
-              <a
-                href="/PALOMITAS_REDONDITAS.pdf"
-                download="PALOMITAS_REDONDITAS.pdf"
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = '/PALOMITAS_REDONDITAS.pdf';
+                  link.download = 'PALOMITAS_REDONDITAS.pdf';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
               >
                 <Download className="w-4 h-4" />
                 <span>Descargar</span>
-              </a>
+              </button>
               <a
                 href="/PALOMITAS_REDONDITAS.pdf"
                 target="_blank"
@@ -359,7 +373,7 @@ const FolderView = ({
               </a>
             </div>
             <iframe
-              src={`https://docs.google.com/gview?url=${encodeURIComponent(window.location.origin + "/PALOMITAS_REDONDITAS.pdf")}&embedded=true`}
+              src="/PALOMITAS_REDONDITAS.pdf"
               className="w-full h-[70vh] rounded-lg border border-border"
               title="Recetas en PDF"
             />
