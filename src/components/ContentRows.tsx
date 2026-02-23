@@ -6,7 +6,6 @@ import coverEmpieza from "@/assets/cover-empieza.jpg";
 import coverPdfReal from "@/assets/cover-pdf-real.jpg";
 import coverVideo from "@/assets/cover-receitas-video.jpg";
 import coverCalculadora from "@/assets/cover-calculadora.jpg";
-import coverCaramelizacion from "@/assets/cover-caramelizacion.jpg";
 import coverAgridulces from "@/assets/cover-agridulces.jpg";
 
 import thumbClassicas from "@/assets/thumb-classicas.jpg";
@@ -41,7 +40,6 @@ const folderCovers: Record<string, string> = {
   "receitas-pdf": coverPdfReal,
   "receitas-video": coverVideo,
   calculadora: coverCalculadora,
-  caramelizacion: coverCaramelizacion,
   "receitas-agridulces": coverAgridulces,
 };
 
@@ -318,7 +316,6 @@ const FolderView = ({
   const isAudioFolder = folder.lessons.every((l) => l.type === "audio");
   const isCalculadora = folder.id === "calculadora";
   const isPdfFolder = folder.id === "receitas-pdf";
-  const isCaramelizacion = folder.id === "caramelizacion";
 
   return (
     <div className="animate-fade-in pb-16">
@@ -354,19 +351,6 @@ const FolderView = ({
               title="Calculadora de Precios"
               allowFullScreen
             />
-          </div>
-        ) : isCaramelizacion ? (
-          /* Caramelización video embedded directly */
-          <div className="w-full max-w-5xl mx-auto">
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
-              <iframe
-                src="https://drive.google.com/file/d/14vScNxWUUyX9vYfaoL_Ne6vvJe0UDMxz/preview"
-                className="w-full h-full"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-                title="Caramelización"
-              />
-            </div>
           </div>
         ) : isPdfFolder ? (
           /* PDF embedded via Google Docs Viewer */

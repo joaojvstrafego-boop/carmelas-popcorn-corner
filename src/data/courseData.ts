@@ -56,28 +56,26 @@ export const courseFolders: CourseFolder[] = [
     ],
   },
   {
-    id: "caramelizacion",
-    title: "Caramelización (Mira antes de empezar)",
-    description: "Mira este video antes de las recetas dulces",
-    icon: Video,
-    color: "primary",
-    lessons: [
-      {
-        id: "caramel-1",
-        title: "Técnica de Caramelización",
-        description: "Aprende la técnica base antes de las recetas dulces",
-        type: "video",
-        videoUrl: "https://drive.google.com/file/d/14vScNxWUUyX9vYfaoL_Ne6vvJe0UDMxz/preview",
-      },
-    ],
-  },
-  {
     id: "receitas-video",
     title: "Recetas Dulces en Video",
     description: "Sigue el paso a paso con Carmela",
     icon: Video,
     color: "primary",
     lessons: [
+      {
+        id: "video-obligatorio",
+        title: "Clase 1 (Obligatorio ver primero)",
+        description: "Clase introductoria obligatoria antes de comenzar",
+        type: "video",
+        videoUrl: "https://drive.google.com/file/d/14jtwy15RPdXSNFwL-E0p2fKCWF5gTVNT/preview",
+      },
+      {
+        id: "video-caramelizacion",
+        title: "Caramelización (Obligatorio ver antes de las recetas)",
+        description: "Aprende la técnica de caramelización antes de las recetas",
+        type: "video",
+        videoUrl: "https://drive.google.com/file/d/10JZh2XcIVHvXyxydnDMNBQvvvqfbFmk8/preview",
+      },
       {
         id: "video-1",
         title: "Leche nido (en polvo)",
