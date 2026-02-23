@@ -7,6 +7,7 @@ import coverPdfReal from "@/assets/cover-pdf-real.jpg";
 import coverVideo from "@/assets/cover-receitas-video.jpg";
 import coverCalculadora from "@/assets/cover-calculadora.jpg";
 import coverCaramelizacion from "@/assets/cover-caramelizacion.jpg";
+import coverAgridulces from "@/assets/cover-agridulces.jpg";
 
 import thumbClassicas from "@/assets/thumb-classicas.jpg";
 import thumbChocolate from "@/assets/thumb-chocolate.jpg";
@@ -24,6 +25,16 @@ import thumbMani from "@/assets/thumb-mani.jpg";
 import thumbFresa from "@/assets/thumb-fresa.jpg";
 import thumbCoco from "@/assets/thumb-coco.jpg";
 import thumbCocoChoco from "@/assets/thumb-coco-choco.jpg";
+import thumbDoritos from "@/assets/thumb-doritos.jpg";
+import thumbCebolla from "@/assets/thumb-cebolla.jpg";
+import thumbMexicana from "@/assets/thumb-mexicana.jpg";
+import thumbPapas from "@/assets/thumb-papas.jpg";
+import thumbAjo from "@/assets/thumb-ajo.jpg";
+import thumbLemon from "@/assets/thumb-lemon.jpg";
+import thumbQueso from "@/assets/thumb-queso.jpg";
+import thumbManiAgridulce from "@/assets/thumb-mani-agridulce.jpg";
+import thumbUtensilios from "@/assets/thumb-utensilios.jpg";
+import thumbIntroAgridulce from "@/assets/thumb-intro-agridulce.jpg";
 
 const folderCovers: Record<string, string> = {
   introducao: coverEmpieza,
@@ -31,6 +42,7 @@ const folderCovers: Record<string, string> = {
   "receitas-video": coverVideo,
   calculadora: coverCalculadora,
   caramelizacion: coverCaramelizacion,
+  "receitas-agridulces": coverAgridulces,
 };
 
 const thumbnailMap: Record<string, string> = {
@@ -52,6 +64,16 @@ const thumbnailMap: Record<string, string> = {
   fresa: thumbFresa,
   coco: thumbCoco,
   "coco-choco": thumbCocoChoco,
+  doritos: thumbDoritos,
+  cebolla: thumbCebolla,
+  mexicana: thumbMexicana,
+  papas: thumbPapas,
+  ajo: thumbAjo,
+  lemon: thumbLemon,
+  queso: thumbQueso,
+  "mani-agridulce": thumbManiAgridulce,
+  utensilios: thumbUtensilios,
+  "intro-agridulce": thumbIntroAgridulce,
 };
 
 // --- Folder Card (poster style) ---
@@ -247,6 +269,7 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
           src={`https://docs.google.com/gview?url=${encodeURIComponent('https://carmelas-popcorn-corner.lovable.app/PALOMITAS_REDONDITAS.pdf')}&embedded=true`}
           className="w-full h-full border-0"
           title={lesson.title}
+          allowFullScreen
         />
       </div>
     </div>
@@ -329,6 +352,7 @@ const FolderView = ({
               src="https://dulce-pop-calculadora.lovable.app"
               className="w-full h-[70vh] rounded-lg border border-border"
               title="Calculadora de Precios"
+              allowFullScreen
             />
           </div>
         ) : isCaramelizacion ? (
@@ -376,6 +400,7 @@ const FolderView = ({
               src={`https://docs.google.com/gview?url=${encodeURIComponent('https://carmelas-popcorn-corner.lovable.app/PALOMITAS_REDONDITAS.pdf')}&embedded=true`}
               className="w-full h-[70vh] rounded-lg border border-border"
               title="Recetas en PDF"
+              allowFullScreen
             />
           </div>
         ) : isAudioFolder ? (
