@@ -6,6 +6,7 @@ import coverEmpieza from "@/assets/cover-empieza.jpg";
 import coverPdfReal from "@/assets/cover-pdf-real.jpg";
 import coverVideo from "@/assets/cover-receitas-doces.png";
 import coverCalculadora from "@/assets/cover-calculadora.jpg";
+import coverOrcamentos from "@/assets/cover-orcamentos.png";
 import coverAgridulces from "@/assets/cover-agridulces.jpg";
 import coverBonusInstagram from "@/assets/cover-bonus-instagram.jpg";
 import coverSoporte from "@/assets/cover-soporte.jpg";
@@ -49,7 +50,7 @@ const folderCovers: Record<string, string> = {
   "receitas-agridulces": coverAgridulces,
   "bonus-instagram": coverBonusInstagram,
   "instagram-ai": coverBonusInstagram,
-  orcamentos: coverCalculadora,
+  orcamentos: coverOrcamentos,
   soporte: coverSoporte,
 };
 
