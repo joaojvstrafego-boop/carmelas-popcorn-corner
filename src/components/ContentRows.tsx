@@ -9,6 +9,7 @@ import coverCalculadora from "@/assets/cover-calculadora.jpg";
 import coverOrcamentos from "@/assets/cover-orcamentos.png";
 import coverAgridulces from "@/assets/cover-agridulces.jpg";
 import coverBonusInstagram from "@/assets/cover-bonus-instagram.jpg";
+import coverInstagramAI from "@/assets/cover-instagram-ai.png";
 import coverSoporte from "@/assets/cover-soporte.jpg";
 
 const SupportChat = lazy(() => import("@/components/SupportChat"));
@@ -49,7 +50,7 @@ const folderCovers: Record<string, string> = {
   calculadora: coverCalculadora,
   "receitas-agridulces": coverAgridulces,
   "bonus-instagram": coverBonusInstagram,
-  "instagram-ai": coverBonusInstagram,
+  "instagram-ai": coverInstagramAI,
   orcamentos: coverOrcamentos,
   soporte: coverSoporte,
 };
