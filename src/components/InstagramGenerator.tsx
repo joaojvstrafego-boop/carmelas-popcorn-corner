@@ -104,51 +104,52 @@ const renderPostToCanvas = (
   brandName: string,
   instagramHandle: string,
 ): string => {
-  const size = 1080;
+  const w = 1080;
+  const h = 1350; // 4:5 Instagram vertical format
   const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = w;
+  canvas.height = h;
   const ctx = canvas.getContext("2d")!;
 
-  // Draw background image (cover fit)
+  // Draw background image (cover fit to 4:5)
+  const targetRatio = w / h;
   const imgRatio = img.naturalWidth / img.naturalHeight;
   let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
-  if (imgRatio > 1) {
-    sx = (img.naturalWidth - img.naturalHeight) / 2;
-    sw = img.naturalHeight;
+  if (imgRatio > targetRatio) {
+    // Image is wider — crop sides
+    sw = img.naturalHeight * targetRatio;
+    sx = (img.naturalWidth - sw) / 2;
   } else {
-    sy = (img.naturalHeight - img.naturalWidth) / 2;
-    sh = img.naturalWidth;
+    // Image is taller — crop top/bottom
+    sh = img.naturalWidth / targetRatio;
+    sy = (img.naturalHeight - sh) / 2;
   }
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
 
   const colors = OVERLAY_STYLES[style] || OVERLAY_STYLES.vibrant;
   const isMinimal = style === "minimal";
 
   // Overlay gradient
   if (isMinimal) {
-    // Bottom white gradient for minimal
-    const grad = ctx.createLinearGradient(0, size * 0.3, 0, size);
+    const grad = ctx.createLinearGradient(0, h * 0.3, 0, h);
     grad.addColorStop(0, "rgba(255,255,255,0)");
     grad.addColorStop(0.4, "rgba(255,255,255,0.85)");
     grad.addColorStop(1, "rgba(255,255,255,0.95)");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(0, 0, w, h);
   } else {
-    // Dark gradient from bottom
-    const grad = ctx.createLinearGradient(0, size * 0.15, 0, size);
+    const grad = ctx.createLinearGradient(0, h * 0.15, 0, h);
     grad.addColorStop(0, "rgba(0,0,0,0)");
     grad.addColorStop(0.5, "rgba(0,0,0,0.4)");
     grad.addColorStop(1, "rgba(0,0,0,0.85)");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(0, 0, w, h);
 
-    // Top subtle gradient
-    const topGrad = ctx.createLinearGradient(0, 0, 0, size * 0.25);
+    const topGrad = ctx.createLinearGradient(0, 0, 0, h * 0.25);
     topGrad.addColorStop(0, "rgba(0,0,0,0.4)");
     topGrad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = topGrad;
-    ctx.fillRect(0, 0, size, size * 0.25);
+    ctx.fillRect(0, 0, w, h * 0.25);
   }
 
   // Accent bar at top
@@ -166,11 +167,10 @@ const renderPostToCanvas = (
   ctx.fillStyle = colors.headlineColor;
   ctx.textAlign = "left";
 
-  const maxWidth = size - 120;
+  const maxWidth = w - 120;
   const headlineLines = wrapText(ctx, headline.toUpperCase(), maxWidth);
-  const headlineY = size - 220 - (headlineLines.length - 1) * 80;
+  const headlineY = h - 280 - (headlineLines.length - 1) * 80;
   headlineLines.forEach((line, i) => {
-    // Text shadow
     ctx.fillStyle = "rgba(0,0,0,0.3)";
     ctx.fillText(line, 63, headlineY + i * 80 + 3);
     ctx.fillStyle = colors.headlineColor;
@@ -188,14 +188,14 @@ const renderPostToCanvas = (
 
   // Bottom accent line
   ctx.fillStyle = colors.brandColor;
-  ctx.fillRect(60, size - 60, size - 120, 4);
+  ctx.fillRect(60, h - 60, w - 120, 4);
 
   // Bottom brand tag
   ctx.font = "500 22px 'DM Sans', Arial, sans-serif";
   ctx.fillStyle = colors.subtitleColor;
   ctx.textAlign = "right";
   const handle = instagramHandle ? (instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`) : "@palomitasredonditas";
-  ctx.fillText(handle, size - 60, size - 28);
+  ctx.fillText(handle, w - 60, h - 28);
 
   return canvas.toDataURL("image/png");
 };
@@ -445,7 +445,7 @@ const InstagramGenerator = () => {
             <img
               src={compositeUrl || result?.imageUrl}
               alt="Post de Instagram generado"
-              className="w-full aspect-square object-cover"
+              className="w-full aspect-[4/5] object-cover"
             />
             <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-colors duration-300 flex items-center justify-center">
               <button

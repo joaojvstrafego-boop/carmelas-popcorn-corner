@@ -34,7 +34,7 @@ serve(async (req) => {
     const typeImageDesc = postTypeImageDesc[postType] || postTypeImageDesc.tip;
 
     // Generate CLEAN background image (NO text)
-    const imagePrompt = `Professional food photography, square format exactly 1080x1080 pixels (1:1 aspect ratio for Instagram post).
+    const imagePrompt = `Professional food photography, vertical format 4:5 aspect ratio (1080x1350 pixels, Instagram post format).
 ${typeImageDesc}
 Style: ${styleDesc}
 Subject related to: ${prompt}
