@@ -10,26 +10,47 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt, style } = await req.json();
+    const { prompt, style, postType } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const styleDescriptions: Record<string, string> = {
-      elegant: "luxurious, elegant food photography style with golden tones, soft bokeh background, warm lighting, premium feel",
-      vibrant: "vibrant, colorful pop-art style with bold neon colors, high contrast, energetic and eye-catching for social media",
-      minimal: "clean minimalist style with white/neutral background, centered composition, modern typography space, editorial feel",
-      rustic: "cozy rustic style with wooden textures, warm earth tones, handcrafted feel, artisan vibes",
+      elegant: "luxury style, gold accents, dark background, serif fonts, premium sophisticated feel",
+      vibrant: "bold neon colors, gradient backgrounds, modern sans-serif fonts, energetic pop style",
+      minimal: "clean white background, minimal elements, thin modern fonts, lots of whitespace, editorial",
+      rustic: "warm earth tones, kraft paper textures, handwritten fonts, cozy artisan feel",
+    };
+
+    const postTypeDescriptions: Record<string, string> = {
+      tip: "a business TIP post with a short catchy headline and a brief tip text. Include a lightbulb or tip icon element",
+      promo: "a PROMOTIONAL post announcing a special offer or new flavor. Include price or discount badge element",
+      recipe: "a RECIPE CARD post showing ingredients list and a small step-by-step. Beautiful food styling",
+      motivational: "an INSPIRATIONAL quote post with a motivational phrase about entrepreneurship or food business",
+      beforeAfter: "a BEFORE/AFTER transformation post showing plain corn vs gorgeous gourmet popcorn",
+      carousel: "a CAROUSEL COVER slide post with a catchy title that makes people want to swipe",
     };
 
     const styleDesc = styleDescriptions[style] || styleDescriptions.vibrant;
+    const typeDesc = postTypeDescriptions[postType] || postTypeDescriptions.tip;
 
-    const imagePrompt = `Create a stunning Instagram post image for a gourmet popcorn business. 
-Theme: ${prompt}. 
-Style: ${styleDesc}. 
-The image should be square (1:1 ratio), perfect for Instagram. 
-Include beautiful gourmet popcorn as the main subject. 
-Make it look professional, mouth-watering, and scroll-stopping. 
-DO NOT include any text or words in the image.`;
+    const imagePrompt = `Create a professional Instagram post design (square 1:1) for a gourmet popcorn business called "Palomitas Redonditas".
+
+This is ${typeDesc}.
+
+Topic/Content: ${prompt}
+
+Visual Style: ${styleDesc}
+
+IMPORTANT DESIGN RULES:
+- This is a DESIGNED POST, not just a photo. It should look like a professional Canva/graphic design post.
+- Include TEXT ON THE IMAGE with a headline and short body text in SPANISH.
+- Use beautiful typography hierarchy (big headline, smaller body text).
+- Include decorative elements like icons, shapes, borders, or badges.
+- Include the brand name "Palomitas Redonditas" subtly at the bottom.
+- Make it look like a real business Instagram post that gets high engagement.
+- The text should be readable and well-positioned.
+- Include popcorn imagery as part of the design composition.
+- Make it scroll-stopping and professional.`;
 
     // Generate image
     const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -62,14 +83,10 @@ DO NOT include any text or words in the image.`;
     }
 
     const imageData = await imageResponse.json();
-    console.log("Image API response keys:", JSON.stringify(Object.keys(imageData)));
-    console.log("Choice message keys:", JSON.stringify(Object.keys(imageData.choices?.[0]?.message || {})));
     
-    // Try multiple paths to find the image
     let imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     if (!imageUrl) {
-      // Sometimes the image is inline in content as base64
       const content = imageData.choices?.[0]?.message?.content;
       if (typeof content === "string" && content.startsWith("data:image")) {
         imageUrl = content;
@@ -84,7 +101,7 @@ DO NOT include any text or words in the image.`;
       throw new Error("No image generated");
     }
 
-    // Generate caption
+    // Generate caption for the feed
     const captionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -96,26 +113,35 @@ DO NOT include any text or words in the image.`;
         messages: [
           {
             role: "system",
-            content: `Eres una experta en marketing de Instagram para un negocio de palomitas gourmet llamado "Palomitas Redonditas". 
-Genera captions creativos, emocionales y que generen engagement. 
-Incluye emojis relevantes, call-to-action, y hashtags populares en español.
-La respuesta debe tener este formato exacto:
+            content: `Eres una community manager experta para "Palomitas Redonditas", un negocio de palomitas gourmet.
 
+Genera el CAPTION que va en la descripción del post de Instagram (NO en la imagen, sino abajo del post).
+
+Reglas:
+- Primera línea: un hook que capture atención (pregunta, dato curioso, o frase impactante)
+- Segundo párrafo: contenido de valor relacionado al tema
+- Tercer párrafo: call-to-action claro (guardar, compartir, comentar, o comprar)
+- Último bloque: 15-20 hashtags relevantes mezclando populares y de nicho
+- Usa emojis estratégicamente (no excesivos)
+- Tono: cercano, profesional, apasionado por las palomitas
+- Escribe en español
+
+Formato exacto:
 CAPTION:
-[el caption aquí]
+[hook + contenido + CTA]
 
 HASHTAGS:
-[los hashtags aquí]`,
+[hashtags]`,
           },
           {
             role: "user",
-            content: `Genera un caption para Instagram sobre: ${prompt}. Estilo: ${style}.`,
+            content: `Tipo de post: ${postType || "tip"}. Tema: ${prompt}.`,
           },
         ],
       }),
     });
 
-    let caption = "🍿 ¡Palomitas gourmet que enamoran! ✨\n\n#PalomitasGourmet #Popcorn";
+    let caption = "🍿 ¡Palomitas gourmet que enamoran! ✨\n\nGuarda este post para después 📌\n\n#PalomitasGourmet #Popcorn #Emprendimiento";
     if (captionResponse.ok) {
       const captionData = await captionResponse.json();
       caption = captionData.choices?.[0]?.message?.content || caption;
