@@ -1,8 +1,15 @@
-import { useState, useRef } from "react";
-import { Plus, Trash2, Download, FileText } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Plus, Trash2, Download, FileText, Save, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BudgetItem {
   id: string;
@@ -10,6 +17,44 @@ interface BudgetItem {
   quantity: number;
   unitPrice: number;
 }
+
+interface CompanyProfile {
+  companyName: string;
+  phone: string;
+  address: string;
+  currency: string;
+}
+
+const CURRENCIES = [
+  { code: "MXN", symbol: "$", label: "🇲🇽 Peso Mexicano (MXN)" },
+  { code: "BRL", symbol: "R$", label: "🇧🇷 Real Brasileiro (BRL)" },
+  { code: "ARS", symbol: "$", label: "🇦🇷 Peso Argentino (ARS)" },
+  { code: "COP", symbol: "$", label: "🇨🇴 Peso Colombiano (COP)" },
+  { code: "CLP", symbol: "$", label: "🇨🇱 Peso Chileno (CLP)" },
+  { code: "PEN", symbol: "S/", label: "🇵🇪 Sol Peruano (PEN)" },
+  { code: "UYU", symbol: "$", label: "🇺🇾 Peso Uruguayo (UYU)" },
+  { code: "BOB", symbol: "Bs", label: "🇧🇴 Boliviano (BOB)" },
+  { code: "PYG", symbol: "₲", label: "🇵🇾 Guaraní (PYG)" },
+  { code: "GTQ", symbol: "Q", label: "🇬🇹 Quetzal (GTQ)" },
+  { code: "HNL", symbol: "L", label: "🇭🇳 Lempira (HNL)" },
+  { code: "NIO", symbol: "C$", label: "🇳🇮 Córdoba (NIO)" },
+  { code: "CRC", symbol: "₡", label: "🇨🇷 Colón (CRC)" },
+  { code: "PAB", symbol: "B/.", label: "🇵🇦 Balboa (PAB)" },
+  { code: "DOP", symbol: "RD$", label: "🇩🇴 Peso Dominicano (DOP)" },
+  { code: "VES", symbol: "Bs.S", label: "🇻🇪 Bolívar (VES)" },
+  { code: "USD", symbol: "$", label: "🇺🇸 Dólar (USD)" },
+  { code: "EUR", symbol: "€", label: "🇪🇺 Euro (EUR)" },
+];
+
+const STORAGE_KEY = "budget-company-profile";
+
+const loadProfile = (): CompanyProfile => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { companyName: "", phone: "", address: "", currency: "MXN" };
+};
 
 const generateId = () => Math.random().toString(36).slice(2, 9);
 
@@ -21,12 +66,23 @@ const emptyItem = (): BudgetItem => ({
 });
 
 const BudgetGenerator = () => {
-  const [companyName, setCompanyName] = useState("");
+  const [profile, setProfile] = useState<CompanyProfile>(loadProfile);
+  const [saved, setSaved] = useState(false);
   const [clientName, setClientName] = useState("");
-  const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<BudgetItem[]>([emptyItem()]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const updateProfile = (field: keyof CompanyProfile, value: string) => {
+    setProfile((p) => ({ ...p, [field]: value }));
+    setSaved(false);
+  };
+
+  const saveProfile = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   const addItem = () => setItems((prev) => [...prev, emptyItem()]);
 
@@ -43,14 +99,16 @@ const BudgetGenerator = () => {
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 
+  const curr = CURRENCIES.find((c) => c.code === profile.currency) || CURRENCIES[0];
+
   const formatCurrency = (v: number) =>
-    v.toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+    `${curr.symbol} ${v.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const generatePdf = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const w = 794; // A4-ish width at 96dpi
+    const w = 794;
     const baseH = 900;
     const rowH = 36;
     const totalH = Math.max(baseH, 520 + items.length * rowH + 260);
@@ -58,16 +116,14 @@ const BudgetGenerator = () => {
     canvas.height = totalH;
     const ctx = canvas.getContext("2d")!;
 
-    // Background
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, w, totalH);
 
-    // Header bar
     const headerH = 100;
     ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 0, w, headerH);
 
-    // Logo icon (popcorn bucket)
+    // Logo icon
     ctx.fillStyle = "#e94560";
     ctx.beginPath();
     ctx.moveTo(50, 25);
@@ -76,24 +132,21 @@ const BudgetGenerator = () => {
     ctx.lineTo(55, 75);
     ctx.closePath();
     ctx.fill();
-    // Popcorn circles
     ctx.fillStyle = "#f5c518";
-    [[62, 22], [78, 22], [70, 18], [58, 28], [82, 28]].forEach(([x, y]) => {
+    ([[62, 22], [78, 22], [70, 18], [58, 28], [82, 28]] as number[][]).forEach(([x, y]) => {
       ctx.beginPath();
       ctx.arc(x, y, 7, 0, Math.PI * 2);
       ctx.fill();
     });
 
-    // Company name in header
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "bold 26px 'DM Sans', Arial, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(companyName || "Mi Negocio de Palomitas", 110, 50);
+    ctx.fillText(profile.companyName || "Mi Negocio de Palomitas", 110, 50);
     ctx.font = "14px 'DM Sans', Arial, sans-serif";
     ctx.fillStyle = "#cccccc";
     ctx.fillText("PRESUPUESTO", 110, 72);
 
-    // Date
     const today = new Date().toLocaleDateString("es-MX", {
       year: "numeric",
       month: "long",
@@ -102,37 +155,45 @@ const BudgetGenerator = () => {
     ctx.textAlign = "right";
     ctx.fillStyle = "#cccccc";
     ctx.font = "13px 'DM Sans', Arial, sans-serif";
-    ctx.fillText(today, w - 40, 55);
+    ctx.fillText(today, w - 40, 50);
+    ctx.fillText(`Moneda: ${profile.currency}`, w - 40, 70);
 
-    // Accent line
     ctx.fillStyle = "#e94560";
     ctx.fillRect(0, headerH, w, 4);
 
     let y = headerH + 40;
 
-    // Client info
     ctx.textAlign = "left";
     ctx.fillStyle = "#666666";
     ctx.font = "13px 'DM Sans', Arial, sans-serif";
     ctx.fillText("CLIENTE:", 40, y);
     ctx.fillStyle = "#1a1a2e";
     ctx.font = "bold 16px 'DM Sans', Arial, sans-serif";
-    ctx.fillText(clientName || "—", 110, y);
+    ctx.fillText(clientName || "—", 120, y);
     y += 28;
 
-    if (phone) {
+    if (profile.phone) {
       ctx.fillStyle = "#666666";
       ctx.font = "13px 'DM Sans', Arial, sans-serif";
       ctx.fillText("TEL:", 40, y);
       ctx.fillStyle = "#1a1a2e";
       ctx.font = "14px 'DM Sans', Arial, sans-serif";
-      ctx.fillText(phone, 110, y);
+      ctx.fillText(profile.phone, 120, y);
+      y += 28;
+    }
+
+    if (profile.address) {
+      ctx.fillStyle = "#666666";
+      ctx.font = "13px 'DM Sans', Arial, sans-serif";
+      ctx.fillText("DIR:", 40, y);
+      ctx.fillStyle = "#1a1a2e";
+      ctx.font = "14px 'DM Sans', Arial, sans-serif";
+      ctx.fillText(profile.address, 120, y);
       y += 28;
     }
 
     y += 16;
 
-    // Table header
     const cols = { product: 40, qty: 420, unit: 530, total: 650 };
     ctx.fillStyle = "#f0f0f5";
     ctx.fillRect(30, y - 16, w - 60, 36);
@@ -146,7 +207,6 @@ const BudgetGenerator = () => {
     ctx.textAlign = "left";
     y += 36;
 
-    // Table rows
     ctx.font = "14px 'DM Sans', Arial, sans-serif";
     items.forEach((item, idx) => {
       if (idx % 2 === 1) {
@@ -163,7 +223,6 @@ const BudgetGenerator = () => {
       y += rowH;
     });
 
-    // Divider
     y += 10;
     ctx.strokeStyle = "#e0e0e0";
     ctx.lineWidth = 1;
@@ -173,7 +232,6 @@ const BudgetGenerator = () => {
     ctx.stroke();
     y += 24;
 
-    // Subtotal
     ctx.font = "bold 18px 'DM Sans', Arial, sans-serif";
     ctx.fillStyle = "#1a1a2e";
     ctx.textAlign = "right";
@@ -181,7 +239,6 @@ const BudgetGenerator = () => {
     ctx.textAlign = "left";
     y += 40;
 
-    // Notes
     if (notes) {
       ctx.fillStyle = "#666666";
       ctx.font = "bold 12px 'DM Sans', Arial, sans-serif";
@@ -189,7 +246,6 @@ const BudgetGenerator = () => {
       y += 20;
       ctx.font = "13px 'DM Sans', Arial, sans-serif";
       ctx.fillStyle = "#444444";
-      // Word wrap notes
       const maxW = w - 80;
       const words = notes.split(" ");
       let line = "";
@@ -207,20 +263,17 @@ const BudgetGenerator = () => {
       y += 30;
     }
 
-    // Footer
-    y = Math.max(y + 20, totalH - 50);
     ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, totalH - 40, w, 40);
     ctx.fillStyle = "#999999";
     ctx.font = "11px 'DM Sans', Arial, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(
-      `${companyName || "Mi Negocio de Palomitas"} • Presupuesto generado automáticamente`,
+      `${profile.companyName || "Mi Negocio de Palomitas"} • Presupuesto generado automáticamente`,
       w / 2,
       totalH - 16
     );
 
-    // Download
     const link = document.createElement("a");
     const fileName = `Presupuesto_${(clientName || "cliente").replace(/\s+/g, "_")}.png`;
     link.download = fileName;
@@ -232,11 +285,26 @@ const BudgetGenerator = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {/* Company profile (saved) */}
       <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-        <h3 className="font-display text-xl tracking-wider text-foreground flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
-          Datos del Presupuesto
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-xl tracking-wider text-foreground flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
+            Datos de tu Empresa
+          </h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={saveProfile}
+            className="gap-1.5"
+          >
+            {saved ? <Check className="w-4 h-4 text-green-500" /> : <Save className="w-4 h-4" />}
+            {saved ? "¡Guardado!" : "Guardar"}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground -mt-3">
+          Estos datos se guardan en tu dispositivo para que no tengas que llenarlos cada vez.
+        </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -244,31 +312,63 @@ const BudgetGenerator = () => {
             <Input
               id="company"
               placeholder="Ej: Palomitas Deliciosas"
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value.slice(0, 60))}
+              value={profile.companyName}
+              onChange={(e) => updateProfile("companyName", e.target.value.slice(0, 60))}
               maxLength={60}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="client">Nombre del cliente</Label>
-            <Input
-              id="client"
-              placeholder="Ej: María López"
-              value={clientName}
-              onChange={(e) => setClientName(e.target.value.slice(0, 60))}
-              maxLength={60}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="phone">Teléfono (opcional)</Label>
+            <Label htmlFor="phone">Tu teléfono</Label>
             <Input
               id="phone"
               placeholder="Ej: +52 55 1234 5678"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.slice(0, 20))}
-              maxLength={20}
+              value={profile.phone}
+              onChange={(e) => updateProfile("phone", e.target.value.slice(0, 30))}
+              maxLength={30}
             />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="address">Dirección (opcional)</Label>
+            <Input
+              id="address"
+              placeholder="Ej: Calle Principal 123, Ciudad"
+              value={profile.address}
+              onChange={(e) => updateProfile("address", e.target.value.slice(0, 100))}
+              maxLength={100}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Moneda</Label>
+            <Select value={profile.currency} onValueChange={(v) => updateProfile("currency", v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
+      {/* Client + budget */}
+      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+        <h3 className="font-display text-xl tracking-wider text-foreground">
+          Datos del Cliente
+        </h3>
+        <div className="space-y-1.5 max-w-sm">
+          <Label htmlFor="client">Nombre del cliente</Label>
+          <Input
+            id="client"
+            placeholder="Ej: María López"
+            value={clientName}
+            onChange={(e) => setClientName(e.target.value.slice(0, 60))}
+            maxLength={60}
+          />
         </div>
       </div>
 
@@ -305,7 +405,7 @@ const BudgetGenerator = () => {
                 />
               </div>
               <div className="space-y-1">
-                {idx === 0 && <Label className="text-xs text-muted-foreground">Precio</Label>}
+                {idx === 0 && <Label className="text-xs text-muted-foreground">Precio ({curr.symbol})</Label>}
                 <Input
                   type="number"
                   min={0}
@@ -334,7 +434,6 @@ const BudgetGenerator = () => {
           <Plus className="w-4 h-4" /> Agregar producto
         </Button>
 
-        {/* Running total */}
         <div className="flex justify-end pt-2 border-t border-border">
           <span className="font-display text-lg tracking-wider text-foreground">
             Total: {formatCurrency(subtotal)}
@@ -355,7 +454,6 @@ const BudgetGenerator = () => {
         />
       </div>
 
-      {/* Generate */}
       <Button
         onClick={generatePdf}
         disabled={!isValid}
