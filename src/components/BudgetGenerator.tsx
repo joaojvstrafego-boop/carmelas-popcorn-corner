@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Plus, Trash2, Download, FileText, Save, Check } from "lucide-react";
+import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,7 +72,6 @@ const BudgetGenerator = () => {
   const [clientName, setClientName] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<BudgetItem[]>([emptyItem()]);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const updateProfile = (field: keyof CompanyProfile, value: string) => {
     setProfile((p) => ({ ...p, [field]: value }));
@@ -105,180 +105,158 @@ const BudgetGenerator = () => {
     `${curr.symbol} ${v.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const generatePdf = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pw = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentW = pw - margin * 2;
+    let y = 20;
 
-    const w = 794;
-    const baseH = 900;
-    const rowH = 36;
-    const totalH = Math.max(baseH, 520 + items.length * rowH + 260);
-    canvas.width = w;
-    canvas.height = totalH;
-    const ctx = canvas.getContext("2d")!;
+    // Header background
+    doc.setFillColor(26, 26, 46);
+    doc.rect(0, 0, pw, 28, "F");
 
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, w, totalH);
+    // Accent line
+    doc.setFillColor(233, 69, 96);
+    doc.rect(0, 28, pw, 1.5, "F");
 
-    const headerH = 100;
-    ctx.fillStyle = "#1a1a2e";
-    ctx.fillRect(0, 0, w, headerH);
-
-    // Logo icon
-    ctx.fillStyle = "#e94560";
-    ctx.beginPath();
-    ctx.moveTo(50, 25);
-    ctx.lineTo(90, 25);
-    ctx.lineTo(85, 75);
-    ctx.lineTo(55, 75);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#f5c518";
-    ([[62, 22], [78, 22], [70, 18], [58, 28], [82, 28]] as number[][]).forEach(([x, y]) => {
-      ctx.beginPath();
-      ctx.arc(x, y, 7, 0, Math.PI * 2);
-      ctx.fill();
+    // Logo popcorn bucket
+    doc.setFillColor(233, 69, 96);
+    doc.triangle(15, 7, 27, 7, 26, 22, "F");
+    doc.triangle(15, 7, 16, 22, 26, 22, "F");
+    doc.setFillColor(245, 197, 24);
+    [
+      [18, 6], [24, 6], [21, 4.5], [16.5, 8], [25.5, 8],
+    ].forEach(([cx, cy]) => {
+      doc.circle(cx, cy, 2, "F");
     });
 
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 26px 'DM Sans', Arial, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText(profile.companyName || "Mi Negocio de Palomitas", 110, 50);
-    ctx.font = "14px 'DM Sans', Arial, sans-serif";
-    ctx.fillStyle = "#cccccc";
-    ctx.fillText("PRESUPUESTO", 110, 72);
+    // Company name
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(profile.companyName || "Mi Negocio de Palomitas", 32, 13);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(200, 200, 200);
+    doc.text("PRESUPUESTO", 32, 19);
 
+    // Date + currency
     const today = new Date().toLocaleDateString("es-MX", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#cccccc";
-    ctx.font = "13px 'DM Sans', Arial, sans-serif";
-    ctx.fillText(today, w - 40, 50);
-    ctx.fillText(`Moneda: ${profile.currency}`, w - 40, 70);
+    doc.setFontSize(8);
+    doc.text(today, pw - margin, 13, { align: "right" });
+    doc.text(`Moneda: ${profile.currency}`, pw - margin, 19, { align: "right" });
 
-    ctx.fillStyle = "#e94560";
-    ctx.fillRect(0, headerH, w, 4);
+    y = 36;
 
-    let y = headerH + 40;
-
-    ctx.textAlign = "left";
-    ctx.fillStyle = "#666666";
-    ctx.font = "13px 'DM Sans', Arial, sans-serif";
-    ctx.fillText("CLIENTE:", 40, y);
-    ctx.fillStyle = "#1a1a2e";
-    ctx.font = "bold 16px 'DM Sans', Arial, sans-serif";
-    ctx.fillText(clientName || "—", 120, y);
-    y += 28;
-
+    // Company info under header
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(8);
     if (profile.phone) {
-      ctx.fillStyle = "#666666";
-      ctx.font = "13px 'DM Sans', Arial, sans-serif";
-      ctx.fillText("TEL:", 40, y);
-      ctx.fillStyle = "#1a1a2e";
-      ctx.font = "14px 'DM Sans', Arial, sans-serif";
-      ctx.fillText(profile.phone, 120, y);
-      y += 28;
+      doc.text(`Tel: ${profile.phone}`, margin, y);
+      y += 5;
     }
-
     if (profile.address) {
-      ctx.fillStyle = "#666666";
-      ctx.font = "13px 'DM Sans', Arial, sans-serif";
-      ctx.fillText("DIR:", 40, y);
-      ctx.fillStyle = "#1a1a2e";
-      ctx.font = "14px 'DM Sans', Arial, sans-serif";
-      ctx.fillText(profile.address, 120, y);
-      y += 28;
+      doc.text(`Dir: ${profile.address}`, margin, y);
+      y += 5;
     }
 
-    y += 16;
+    y += 4;
 
-    const cols = { product: 40, qty: 420, unit: 530, total: 650 };
-    ctx.fillStyle = "#f0f0f5";
-    ctx.fillRect(30, y - 16, w - 60, 36);
-    ctx.fillStyle = "#1a1a2e";
-    ctx.font = "bold 13px 'DM Sans', Arial, sans-serif";
-    ctx.fillText("PRODUCTO", cols.product, y + 4);
-    ctx.fillText("CANT.", cols.qty, y + 4);
-    ctx.fillText("PRECIO UNIT.", cols.unit, y + 4);
-    ctx.textAlign = "right";
-    ctx.fillText("TOTAL", w - 40, y + 4);
-    ctx.textAlign = "left";
-    y += 36;
+    // Client
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text("CLIENTE:", margin, y);
+    doc.setTextColor(26, 26, 46);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(clientName || "—", margin + 22, y);
+    doc.setFont("helvetica", "normal");
+    y += 10;
 
-    ctx.font = "14px 'DM Sans', Arial, sans-serif";
+    // Table header
+    const colX = { product: margin, qty: margin + contentW * 0.55, unit: margin + contentW * 0.7, total: pw - margin };
+    doc.setFillColor(240, 240, 245);
+    doc.rect(margin - 2, y - 4, contentW + 4, 8, "F");
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(26, 26, 46);
+    doc.text("PRODUCTO", colX.product, y);
+    doc.text("CANT.", colX.qty, y);
+    doc.text("P. UNIT.", colX.unit, y);
+    doc.text("TOTAL", colX.total, y, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    y += 8;
+
+    // Table rows
+    doc.setFontSize(9);
     items.forEach((item, idx) => {
       if (idx % 2 === 1) {
-        ctx.fillStyle = "#fafafa";
-        ctx.fillRect(30, y - 14, w - 60, rowH);
+        doc.setFillColor(250, 250, 250);
+        doc.rect(margin - 2, y - 4, contentW + 4, 7, "F");
       }
-      ctx.fillStyle = "#333333";
-      ctx.fillText(item.product || "—", cols.product, y + 8);
-      ctx.fillText(String(item.quantity), cols.qty, y + 8);
-      ctx.fillText(formatCurrency(item.unitPrice), cols.unit, y + 8);
-      ctx.textAlign = "right";
-      ctx.fillText(formatCurrency(item.quantity * item.unitPrice), w - 40, y + 8);
-      ctx.textAlign = "left";
-      y += rowH;
+      doc.setTextColor(51, 51, 51);
+      doc.text(item.product || "—", colX.product, y);
+      doc.text(String(item.quantity), colX.qty, y);
+      doc.text(formatCurrency(item.unitPrice), colX.unit, y);
+      doc.text(formatCurrency(item.quantity * item.unitPrice), colX.total, y, { align: "right" });
+      y += 7;
+
+      // Page break check
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
     });
 
-    y += 10;
-    ctx.strokeStyle = "#e0e0e0";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(30, y);
-    ctx.lineTo(w - 30, y);
-    ctx.stroke();
-    y += 24;
+    // Divider
+    y += 3;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pw - margin, y);
+    y += 8;
 
-    ctx.font = "bold 18px 'DM Sans', Arial, sans-serif";
-    ctx.fillStyle = "#1a1a2e";
-    ctx.textAlign = "right";
-    ctx.fillText(`TOTAL: ${formatCurrency(subtotal)}`, w - 40, y + 4);
-    ctx.textAlign = "left";
-    y += 40;
+    // Total
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(26, 26, 46);
+    doc.text(`TOTAL: ${formatCurrency(subtotal)}`, pw - margin, y, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    y += 12;
 
+    // Notes
     if (notes) {
-      ctx.fillStyle = "#666666";
-      ctx.font = "bold 12px 'DM Sans', Arial, sans-serif";
-      ctx.fillText("OBSERVACIONES:", 40, y);
-      y += 20;
-      ctx.font = "13px 'DM Sans', Arial, sans-serif";
-      ctx.fillStyle = "#444444";
-      const maxW = w - 80;
-      const words = notes.split(" ");
-      let line = "";
-      words.forEach((word) => {
-        const test = line + word + " ";
-        if (ctx.measureText(test).width > maxW && line) {
-          ctx.fillText(line.trim(), 40, y);
-          line = word + " ";
-          y += 18;
-        } else {
-          line = test;
-        }
-      });
-      if (line.trim()) ctx.fillText(line.trim(), 40, y);
-      y += 30;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100, 100, 100);
+      doc.text("OBSERVACIONES:", margin, y);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(68, 68, 68);
+      doc.setFontSize(8);
+      const splitNotes = doc.splitTextToSize(notes, contentW);
+      doc.text(splitNotes, margin, y);
+      y += splitNotes.length * 4 + 5;
     }
 
-    ctx.fillStyle = "#1a1a2e";
-    ctx.fillRect(0, totalH - 40, w, 40);
-    ctx.fillStyle = "#999999";
-    ctx.font = "11px 'DM Sans', Arial, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(
+    // Footer
+    const pageH = doc.internal.pageSize.getHeight();
+    doc.setFillColor(26, 26, 46);
+    doc.rect(0, pageH - 12, pw, 12, "F");
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text(
       `${profile.companyName || "Mi Negocio de Palomitas"} • Presupuesto generado automáticamente`,
-      w / 2,
-      totalH - 16
+      pw / 2,
+      pageH - 5,
+      { align: "center" }
     );
 
-    const link = document.createElement("a");
-    const fileName = `Presupuesto_${(clientName || "cliente").replace(/\s+/g, "_")}.png`;
-    link.download = fileName;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    // Save as PDF (opens on any device)
+    const fileName = `Presupuesto_${(clientName || "cliente").replace(/\s+/g, "_")}.pdf`;
+    doc.save(fileName);
   };
 
   const isValid = items.some((i) => i.product.trim() && i.unitPrice > 0);
@@ -463,7 +441,7 @@ const BudgetGenerator = () => {
         Generar y Descargar Presupuesto
       </Button>
 
-      <canvas ref={canvasRef} className="hidden" />
+      
     </div>
   );
 };
