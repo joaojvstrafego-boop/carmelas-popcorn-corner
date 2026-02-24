@@ -1,4 +1,4 @@
-import { BookOpen, Calculator, FileText, MessageCircle, Video } from "lucide-react";
+import { BookOpen, Calculator, FileText, ImagePlus, MessageCircle, Video } from "lucide-react";
 
 export interface Lesson {
   id: string;
@@ -289,6 +289,21 @@ export const courseFolders: CourseFolder[] = [
         id: "calc-1",
         title: "Calculadora de Precios",
         description: "Herramienta para calcular el precio ideal de tus palomitas",
+        type: "text",
+      },
+    ],
+  },
+  {
+    id: "instagram-ai",
+    title: "Generador IA para Instagram",
+    description: "Crea imágenes y captions profesionales con inteligencia artificial",
+    icon: ImagePlus,
+    color: "accent",
+    lessons: [
+      {
+        id: "ig-generator",
+        title: "Generador de Imágenes IA",
+        description: "Crea posts increíbles para tu negocio de palomitas",
         type: "text",
       },
     ],

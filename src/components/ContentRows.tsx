@@ -1,5 +1,5 @@
 import { useState, useRef, lazy, Suspense } from "react";
-import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink, Volume2, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink, Volume2, MessageCircle, ImagePlus } from "lucide-react";
 import { courseFolders, type CourseFolder, type Lesson } from "@/data/courseData";
 
 import coverEmpieza from "@/assets/cover-empieza.jpg";
@@ -11,6 +11,7 @@ import coverBonusInstagram from "@/assets/cover-bonus-instagram.jpg";
 import coverSoporte from "@/assets/cover-soporte.jpg";
 
 const SupportChat = lazy(() => import("@/components/SupportChat"));
+const InstagramGenerator = lazy(() => import("@/components/InstagramGenerator"));
 
 import thumbClassicas from "@/assets/thumb-classicas.jpg";
 import thumbChocolate from "@/assets/thumb-chocolate.jpg";
@@ -46,6 +47,7 @@ const folderCovers: Record<string, string> = {
   calculadora: coverCalculadora,
   "receitas-agridulces": coverAgridulces,
   "bonus-instagram": coverBonusInstagram,
+  "instagram-ai": coverBonusInstagram,
   soporte: coverSoporte,
 };
 
@@ -109,6 +111,8 @@ const FolderCard = ({ folder, onClick }: { folder: CourseFolder; onClick: () => 
           <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center">
             {folder.id === "soporte" ? (
               <MessageCircle className="w-6 h-6 text-primary-foreground fill-primary-foreground" />
+            ) : folder.id === "instagram-ai" ? (
+              <ImagePlus className="w-6 h-6 text-primary-foreground" />
             ) : (
               <Play className="w-6 h-6 text-primary-foreground fill-primary-foreground ml-0.5" />
             )}
@@ -333,6 +337,7 @@ const FolderView = ({
   const isPdfFolder = folder.id === "receitas-pdf";
   const isBonusFolder = folder.id === "bonus-instagram";
   const isSoporte = folder.id === "soporte";
+  const isInstagramAI = folder.id === "instagram-ai";
   return (
     <div className="animate-fade-in pb-16">
       {/* Hero banner for folder */}
@@ -361,6 +366,10 @@ const FolderView = ({
         {isSoporte ? (
           <Suspense fallback={<div className="text-center text-muted-foreground py-8">Cargando...</div>}>
             <SupportChat />
+          </Suspense>
+        ) : isInstagramAI ? (
+          <Suspense fallback={<div className="text-center text-muted-foreground py-8">Cargando...</div>}>
+            <InstagramGenerator />
           </Suspense>
         ) : isCalculadora ? (
           /* Calculator embedded directly */
