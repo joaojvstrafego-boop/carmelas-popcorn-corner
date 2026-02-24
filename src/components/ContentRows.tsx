@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, lazy, Suspense } from "react";
 import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink, Volume2 } from "lucide-react";
 import { courseFolders, type CourseFolder, type Lesson } from "@/data/courseData";
 
@@ -8,6 +8,9 @@ import coverVideo from "@/assets/cover-receitas-video.jpg";
 import coverCalculadora from "@/assets/cover-calculadora.jpg";
 import coverAgridulces from "@/assets/cover-agridulces.jpg";
 import coverBonusInstagram from "@/assets/cover-bonus-instagram.jpg";
+import coverSoporte from "@/assets/cover-soporte.jpg";
+
+const SupportChat = lazy(() => import("@/components/SupportChat"));
 
 import thumbClassicas from "@/assets/thumb-classicas.jpg";
 import thumbChocolate from "@/assets/thumb-chocolate.jpg";
@@ -43,6 +46,7 @@ const folderCovers: Record<string, string> = {
   calculadora: coverCalculadora,
   "receitas-agridulces": coverAgridulces,
   "bonus-instagram": coverBonusInstagram,
+  soporte: coverSoporte,
 };
 
 const thumbnailMap: Record<string, string> = {
@@ -324,6 +328,7 @@ const FolderView = ({
   const isCalculadora = folder.id === "calculadora";
   const isPdfFolder = folder.id === "receitas-pdf";
   const isBonusFolder = folder.id === "bonus-instagram";
+  const isSoporte = folder.id === "soporte";
   return (
     <div className="animate-fade-in pb-16">
       {/* Hero banner for folder */}
@@ -349,7 +354,11 @@ const FolderView = ({
 
       {/* Content */}
       <div className="px-4 md:px-12">
-        {isCalculadora ? (
+        {isSoporte ? (
+          <Suspense fallback={<div className="text-center text-muted-foreground py-8">Cargando...</div>}>
+            <SupportChat />
+          </Suspense>
+        ) : isCalculadora ? (
           /* Calculator embedded directly */
           <div className="w-full max-w-5xl mx-auto">
             <iframe
