@@ -7,6 +7,7 @@ import coverPdfReal from "@/assets/cover-pdf-real.jpg";
 import coverVideo from "@/assets/cover-receitas-video.jpg";
 import coverCalculadora from "@/assets/cover-calculadora.jpg";
 import coverAgridulces from "@/assets/cover-agridulces.jpg";
+import coverBonusInstagram from "@/assets/cover-bonus-instagram.jpg";
 
 import thumbClassicas from "@/assets/thumb-classicas.jpg";
 import thumbChocolate from "@/assets/thumb-chocolate.jpg";
@@ -41,6 +42,7 @@ const folderCovers: Record<string, string> = {
   "receitas-video": coverVideo,
   calculadora: coverCalculadora,
   "receitas-agridulces": coverAgridulces,
+  "bonus-instagram": coverBonusInstagram,
 };
 
 const thumbnailMap: Record<string, string> = {
@@ -207,12 +209,19 @@ const AudioPlayer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
 
 // --- PDF Viewer Modal ---
 const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) => {
-  const pdfUrl = `/PALOMITAS_REDONDITAS.pdf`;
+  const pdfMap: Record<string, { file: string; name: string }> = {
+    "pdf-1": { file: "/PALOMITAS_REDONDITAS.pdf", name: "PALOMITAS_REDONDITAS.pdf" },
+    "bonus-publicaciones": { file: "/publicaciones.pdf", name: "publicaciones.pdf" },
+    "bonus-leyendas": { file: "/leyendas.pdf", name: "leyendas.pdf" },
+  };
+
+  const pdf = pdfMap[lesson.id] || pdfMap["pdf-1"];
+  const pdfUrl = pdf.file;
 
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = 'PALOMITAS_REDONDITAS.pdf';
+    link.download = pdf.name;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -220,7 +229,6 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
 
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
-      {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
         <div className="flex items-center gap-3">
           <button
@@ -261,10 +269,9 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
           </button>
         </div>
       </div>
-      {/* PDF embedded via Google Docs Viewer */}
       <div className="flex-1 w-full">
         <iframe
-          src={`https://docs.google.com/gview?url=${encodeURIComponent('https://carmelas-popcorn-corner.lovable.app/PALOMITAS_REDONDITAS.pdf')}&embedded=true`}
+          src={`https://docs.google.com/gview?url=${encodeURIComponent('https://carmelas-popcorn-corner.lovable.app' + pdfUrl)}&embedded=true`}
           className="w-full h-full border-0"
           title={lesson.title}
           allowFullScreen
@@ -316,7 +323,7 @@ const FolderView = ({
   const isAudioFolder = folder.lessons.every((l) => l.type === "audio");
   const isCalculadora = folder.id === "calculadora";
   const isPdfFolder = folder.id === "receitas-pdf";
-
+  const isBonusFolder = folder.id === "bonus-instagram";
   return (
     <div className="animate-fade-in pb-16">
       {/* Hero banner for folder */}
@@ -386,6 +393,28 @@ const FolderView = ({
               title="Recetas en PDF"
               allowFullScreen
             />
+          </div>
+        ) : isBonusFolder ? (
+          /* Bonus folder - show PDF lessons as downloadable cards */
+          <div className="max-w-3xl mx-auto space-y-4">
+            {folder.lessons.map((lesson) => (
+              <div
+                key={lesson.id}
+                className="bg-card border border-border rounded-xl p-6 flex items-center gap-4 cursor-pointer hover:bg-accent/10 transition-colors"
+                onClick={() => onPlayLesson(lesson)}
+              >
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <FileText className="w-7 h-7 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-display text-lg tracking-wider text-foreground">
+                    {lesson.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">{lesson.description}</p>
+                </div>
+                <Download className="w-5 h-5 text-muted-foreground" />
+              </div>
+            ))}
           </div>
         ) : isAudioFolder ? (
           /* Audio inline player */

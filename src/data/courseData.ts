@@ -258,6 +258,27 @@ export const courseFolders: CourseFolder[] = [
     ],
   },
   {
+    id: "bonus-instagram",
+    title: "Bonus 1 - 32 Posts Editables para Instagram",
+    description: "Descarga plantillas editables para promocionar tu negocio de palomitas",
+    icon: FileText,
+    color: "accent",
+    lessons: [
+      {
+        id: "bonus-publicaciones",
+        title: "32 Publicaciones Editables",
+        description: "Plantillas de posts profesionales para tu negocio de palomitas",
+        type: "pdf",
+      },
+      {
+        id: "bonus-leyendas",
+        title: "Leyendas para tus Publicaciones",
+        description: "Textos listos para copiar y pegar en tus posts de Instagram",
+        type: "pdf",
+      },
+    ],
+  },
+  {
     id: "calculadora",
     title: "Calculadora",
     description: "Calcula el precio de tus palomitas",
