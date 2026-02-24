@@ -101,6 +101,8 @@ const renderPostToCanvas = (
   headline: string,
   subtitle: string,
   style: string,
+  brandName: string,
+  instagramHandle: string,
 ): string => {
   const size = 1080;
   const canvas = document.createElement("canvas");
@@ -157,7 +159,7 @@ const renderPostToCanvas = (
   ctx.font = "600 28px 'DM Sans', Arial, sans-serif";
   ctx.fillStyle = colors.brandColor;
   ctx.textAlign = "left";
-  ctx.fillText("PALOMITAS REDONDITAS", 60, 104);
+  ctx.fillText((brandName || "PALOMITAS REDONDITAS").toUpperCase(), 60, 104);
 
   // Headline - word wrap
   ctx.font = "bold 72px 'Arial Black', 'Bebas Neue', Impact, sans-serif";
@@ -192,7 +194,8 @@ const renderPostToCanvas = (
   ctx.font = "500 22px 'DM Sans', Arial, sans-serif";
   ctx.fillStyle = colors.subtitleColor;
   ctx.textAlign = "right";
-  ctx.fillText("@palomitasredonditas", size - 60, size - 28);
+  const handle = instagramHandle ? (instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`) : "@palomitasredonditas";
+  ctx.fillText(handle, size - 60, size - 28);
 
   return canvas.toDataURL("image/png");
 };
@@ -220,6 +223,8 @@ const InstagramGenerator = () => {
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState("vibrant");
   const [postType, setPostType] = useState("tip");
+  const [brandName, setBrandName] = useState("");
+  const [instagramHandle, setInstagramHandle] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PostResult | null>(null);
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
@@ -257,7 +262,7 @@ const InstagramGenerator = () => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
-        const composite = renderPostToCanvas(img, data.headline, data.subtitle, style);
+        const composite = renderPostToCanvas(img, data.headline, data.subtitle, style, brandName, instagramHandle);
         setCompositeUrl(composite);
       };
       img.onerror = () => {
@@ -337,6 +342,30 @@ const InstagramGenerator = () => {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* Brand info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground mb-2 font-medium">Nombre de tu marca:</p>
+          <input
+            type="text"
+            value={brandName}
+            onChange={(e) => setBrandName(e.target.value.slice(0, 40))}
+            placeholder="Ej: Palomitas Delicia"
+            className="w-full p-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm"
+          />
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground mb-2 font-medium">Tu @ de Instagram:</p>
+          <input
+            type="text"
+            value={instagramHandle}
+            onChange={(e) => setInstagramHandle(e.target.value.replace(/[^a-zA-Z0-9._]/g, "").slice(0, 30))}
+            placeholder="Ej: palomitasdelicia"
+            className="w-full p-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm"
+          />
         </div>
       </div>
 
