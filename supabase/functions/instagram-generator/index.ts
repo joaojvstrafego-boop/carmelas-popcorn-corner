@@ -62,9 +62,27 @@ DO NOT include any text or words in the image.`;
     }
 
     const imageData = await imageResponse.json();
-    const imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    console.log("Image API response keys:", JSON.stringify(Object.keys(imageData)));
+    console.log("Choice message keys:", JSON.stringify(Object.keys(imageData.choices?.[0]?.message || {})));
+    
+    // Try multiple paths to find the image
+    let imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    if (!imageUrl) {
+      // Sometimes the image is inline in content as base64
+      const content = imageData.choices?.[0]?.message?.content;
+      if (typeof content === "string" && content.startsWith("data:image")) {
+        imageUrl = content;
+      } else if (Array.isArray(content)) {
+        const imgPart = content.find((p: any) => p.type === "image_url" || p.type === "image");
+        imageUrl = imgPart?.image_url?.url || imgPart?.url;
+      }
+    }
 
-    if (!imageUrl) throw new Error("No image generated");
+    if (!imageUrl) {
+      console.error("Full API response:", JSON.stringify(imageData).substring(0, 2000));
+      throw new Error("No image generated");
+    }
 
     // Generate caption
     const captionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
