@@ -309,6 +309,21 @@ export const courseFolders: CourseFolder[] = [
     ],
   },
   {
+    id: "orcamentos",
+    title: "Generador de Presupuestos",
+    description: "Crea presupuestos profesionales en PDF para tus clientes",
+    icon: FileText,
+    color: "accent",
+    lessons: [
+      {
+        id: "orcamento-gen",
+        title: "Generador de Presupuestos",
+        description: "Crea y descarga presupuestos personalizados con tu marca",
+        type: "text",
+      },
+    ],
+  },
+  {
     id: "soporte",
     title: "Soporte",
     description: "Pregúntale a Carmela IA sobre palomitas gourmet",

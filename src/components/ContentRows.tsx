@@ -12,6 +12,7 @@ import coverSoporte from "@/assets/cover-soporte.jpg";
 
 const SupportChat = lazy(() => import("@/components/SupportChat"));
 const InstagramGenerator = lazy(() => import("@/components/InstagramGenerator"));
+const BudgetGenerator = lazy(() => import("@/components/BudgetGenerator"));
 
 import thumbClassicas from "@/assets/thumb-classicas.jpg";
 import thumbChocolate from "@/assets/thumb-chocolate.jpg";
@@ -48,6 +49,7 @@ const folderCovers: Record<string, string> = {
   "receitas-agridulces": coverAgridulces,
   "bonus-instagram": coverBonusInstagram,
   "instagram-ai": coverBonusInstagram,
+  orcamentos: coverCalculadora,
   soporte: coverSoporte,
 };
 
@@ -338,6 +340,7 @@ const FolderView = ({
   const isBonusFolder = folder.id === "bonus-instagram";
   const isSoporte = folder.id === "soporte";
   const isInstagramAI = folder.id === "instagram-ai";
+  const isOrcamentos = folder.id === "orcamentos";
   return (
     <div className="animate-fade-in pb-16">
       {/* Hero banner for folder */}
@@ -370,6 +373,10 @@ const FolderView = ({
         ) : isInstagramAI ? (
           <Suspense fallback={<div className="text-center text-muted-foreground py-8">Cargando...</div>}>
             <InstagramGenerator />
+          </Suspense>
+        ) : isOrcamentos ? (
+          <Suspense fallback={<div className="text-center text-muted-foreground py-8">Cargando...</div>}>
+            <BudgetGenerator />
           </Suspense>
         ) : isCalculadora ? (
           /* Calculator embedded directly */
