@@ -1,5 +1,5 @@
 import { useState, useRef, lazy, Suspense } from "react";
-import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink, Volume2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Download, CheckCircle2, Clock, ArrowLeft, X, FileText, ExternalLink, Volume2, MessageCircle } from "lucide-react";
 import { courseFolders, type CourseFolder, type Lesson } from "@/data/courseData";
 
 import coverEmpieza from "@/assets/cover-empieza.jpg";
@@ -107,7 +107,11 @@ const FolderCard = ({ folder, onClick }: { folder: CourseFolder; onClick: () => 
         </div>
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="w-14 h-14 rounded-full bg-primary/90 flex items-center justify-center">
-            <Play className="w-6 h-6 text-primary-foreground fill-primary-foreground ml-0.5" />
+            {folder.id === "soporte" ? (
+              <MessageCircle className="w-6 h-6 text-primary-foreground fill-primary-foreground" />
+            ) : (
+              <Play className="w-6 h-6 text-primary-foreground fill-primary-foreground ml-0.5" />
+            )}
           </div>
         </div>
       </div>
