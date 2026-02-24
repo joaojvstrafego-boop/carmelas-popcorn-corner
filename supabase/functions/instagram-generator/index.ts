@@ -34,12 +34,14 @@ serve(async (req) => {
     const typeImageDesc = postTypeImageDesc[postType] || postTypeImageDesc.tip;
 
     // Generate CLEAN background image (NO text)
-    const imagePrompt = `Professional food photography for Instagram. Square 1:1 format.
+    const imagePrompt = `Professional food photography, square format exactly 1080x1080 pixels (1:1 aspect ratio for Instagram post).
 ${typeImageDesc}
 Style: ${styleDesc}
 Subject related to: ${prompt}
-CRITICAL: DO NOT include ANY text, words, letters, numbers, logos, or watermarks in the image. 
-This is ONLY a background photo. Pure visual, zero text. Clean photography only.`;
+CRITICAL RULES:
+- The image MUST be perfectly SQUARE (1:1 ratio), like an Instagram post.
+- DO NOT include ANY text, words, letters, numbers, logos, or watermarks.
+- This is ONLY a background photo. Pure visual, zero text. Clean photography only.`;
 
     const imageResponsePromise = fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
