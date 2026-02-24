@@ -1,4 +1,4 @@
-import { BookOpen, Calculator, FileText, Video } from "lucide-react";
+import { BookOpen, Calculator, FileText, MessageCircle, Video } from "lucide-react";
 
 export interface Lesson {
   id: string;
@@ -289,6 +289,21 @@ export const courseFolders: CourseFolder[] = [
         id: "calc-1",
         title: "Calculadora de Precios",
         description: "Herramienta para calcular el precio ideal de tus palomitas",
+        type: "text",
+      },
+    ],
+  },
+  {
+    id: "soporte",
+    title: "Soporte",
+    description: "Pregúntale a Carmela IA sobre palomitas gourmet",
+    icon: MessageCircle,
+    color: "primary",
+    lessons: [
+      {
+        id: "soporte-chat",
+        title: "Chat con Carmela IA",
+        description: "Asistente virtual experta en palomitas gourmet",
         type: "text",
       },
     ],
