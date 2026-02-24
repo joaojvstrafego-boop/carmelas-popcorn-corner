@@ -15,45 +15,33 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const styleDescriptions: Record<string, string> = {
-      elegant: "luxury style, gold accents, dark background, serif fonts, premium sophisticated feel",
-      vibrant: "bold neon colors, gradient backgrounds, modern sans-serif fonts, energetic pop style",
-      minimal: "clean white background, minimal elements, thin modern fonts, lots of whitespace, editorial",
-      rustic: "warm earth tones, kraft paper textures, handwritten fonts, cozy artisan feel",
+      elegant: "luxury dark moody food photography, golden rim lighting, bokeh, deep shadows, rich tones",
+      vibrant: "bright colorful food photography, bold saturated colors, gradient colored lighting, neon accents, energetic",
+      minimal: "clean minimal food photography, white marble background, soft natural light, airy and bright",
+      rustic: "rustic cozy food photography, wooden table, warm golden hour light, earth tones, craft paper elements",
     };
 
-    const postTypeDescriptions: Record<string, string> = {
-      tip: "a business TIP post with a short catchy headline and a brief tip text. Include a lightbulb or tip icon element",
-      promo: "a PROMOTIONAL post announcing a special offer or new flavor. Include price or discount badge element",
-      recipe: "a RECIPE CARD post showing ingredients list and a small step-by-step. Beautiful food styling",
-      motivational: "an INSPIRATIONAL quote post with a motivational phrase about entrepreneurship or food business",
-      beforeAfter: "a BEFORE/AFTER transformation post showing plain corn vs gorgeous gourmet popcorn",
-      carousel: "a CAROUSEL COVER slide post with a catchy title that makes people want to swipe",
+    const postTypeImageDesc: Record<string, string> = {
+      tip: "close-up of beautifully arranged gourmet popcorn with decorative elements around it",
+      promo: "eye-catching arrangement of multiple popcorn flavors in premium packaging or bowls",
+      recipe: "flat-lay of popcorn ingredients neatly arranged with the finished popcorn in center",
+      motivational: "artistic abstract shot of popcorn with dramatic lighting and depth of field",
+      beforeAfter: "split composition showing plain corn kernels on one side and gorgeous caramelized popcorn on the other",
+      carousel: "hero shot of the most beautiful gourmet popcorn overflowing from a premium container",
     };
 
     const styleDesc = styleDescriptions[style] || styleDescriptions.vibrant;
-    const typeDesc = postTypeDescriptions[postType] || postTypeDescriptions.tip;
+    const typeImageDesc = postTypeImageDesc[postType] || postTypeImageDesc.tip;
 
-    const imagePrompt = `Create a professional Instagram post design (square 1:1) for a gourmet popcorn business called "Palomitas Redonditas".
+    // Generate CLEAN background image (NO text)
+    const imagePrompt = `Professional food photography for Instagram. Square 1:1 format.
+${typeImageDesc}
+Style: ${styleDesc}
+Subject related to: ${prompt}
+CRITICAL: DO NOT include ANY text, words, letters, numbers, logos, or watermarks in the image. 
+This is ONLY a background photo. Pure visual, zero text. Clean photography only.`;
 
-This is ${typeDesc}.
-
-Topic/Content: ${prompt}
-
-Visual Style: ${styleDesc}
-
-IMPORTANT DESIGN RULES:
-- This is a DESIGNED POST, not just a photo. It should look like a professional Canva/graphic design post.
-- Include TEXT ON THE IMAGE with a headline and short body text in SPANISH.
-- Use beautiful typography hierarchy (big headline, smaller body text).
-- Include decorative elements like icons, shapes, borders, or badges.
-- Include the brand name "Palomitas Redonditas" subtly at the bottom.
-- Make it look like a real business Instagram post that gets high engagement.
-- The text should be readable and well-positioned.
-- Include popcorn imagery as part of the design composition.
-- Make it scroll-stopping and professional.`;
-
-    // Generate image
-    const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const imageResponsePromise = fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -66,9 +54,53 @@ IMPORTANT DESIGN RULES:
       }),
     });
 
+    // Generate text content + caption in parallel
+    const textResponsePromise = fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          {
+            role: "system",
+            content: `Eres una community manager y diseñadora experta para "Palomitas Redonditas", un negocio de palomitas gourmet.
+
+Debes generar DOS cosas:
+
+1. TEXTO PARA LA IMAGEN (overlay): El texto que irá SOBRE la imagen del post. Debe ser corto y impactante.
+2. CAPTION: El texto que va en la descripción del post de Instagram.
+
+Reglas para TEXTO DE IMAGEN:
+- headline: máximo 6-8 palabras, impactante, en mayúsculas
+- subtitle: máximo 15 palabras, complementa el headline
+- El texto debe ser en español
+
+Reglas para CAPTION:
+- Hook inicial que capture atención
+- Contenido de valor
+- Call-to-action
+- 15-20 hashtags
+
+Responde EXACTAMENTE en este formato JSON (sin markdown, solo JSON puro):
+{"headline":"TU HEADLINE AQUÍ","subtitle":"Tu subtítulo complementario aquí","caption":"El caption completo con emojis y hashtags aquí"}`,
+          },
+          {
+            role: "user",
+            content: `Tipo de post: ${postType || "tip"}. Tema: ${prompt}.`,
+          },
+        ],
+      }),
+    });
+
+    const [imageResponse, textResponse] = await Promise.all([imageResponsePromise, textResponsePromise]);
+
+    // Handle image response
     if (!imageResponse.ok) {
       if (imageResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Límite de solicitudes excedido. Intenta de nuevo en unos segundos." }), {
+        return new Response(JSON.stringify({ error: "Límite de solicitudes excedido. Intenta de nuevo." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -83,9 +115,7 @@ IMPORTANT DESIGN RULES:
     }
 
     const imageData = await imageResponse.json();
-    
     let imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    
     if (!imageUrl) {
       const content = imageData.choices?.[0]?.message?.content;
       if (typeof content === "string" && content.startsWith("data:image")) {
@@ -95,59 +125,34 @@ IMPORTANT DESIGN RULES:
         imageUrl = imgPart?.image_url?.url || imgPart?.url;
       }
     }
-
     if (!imageUrl) {
-      console.error("Full API response:", JSON.stringify(imageData).substring(0, 2000));
+      console.error("No image in response:", JSON.stringify(imageData).substring(0, 1000));
       throw new Error("No image generated");
     }
 
-    // Generate caption for the feed
-    const captionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: `Eres una community manager experta para "Palomitas Redonditas", un negocio de palomitas gourmet.
+    // Handle text response
+    let headline = "PALOMITAS GOURMET";
+    let subtitle = "El sabor que enamora";
+    let caption = "🍿 ¡Palomitas gourmet que enamoran! ✨\n\n#PalomitasGourmet #Popcorn";
 
-Genera el CAPTION que va en la descripción del post de Instagram (NO en la imagen, sino abajo del post).
-
-Reglas:
-- Primera línea: un hook que capture atención (pregunta, dato curioso, o frase impactante)
-- Segundo párrafo: contenido de valor relacionado al tema
-- Tercer párrafo: call-to-action claro (guardar, compartir, comentar, o comprar)
-- Último bloque: 15-20 hashtags relevantes mezclando populares y de nicho
-- Usa emojis estratégicamente (no excesivos)
-- Tono: cercano, profesional, apasionado por las palomitas
-- Escribe en español
-
-Formato exacto:
-CAPTION:
-[hook + contenido + CTA]
-
-HASHTAGS:
-[hashtags]`,
-          },
-          {
-            role: "user",
-            content: `Tipo de post: ${postType || "tip"}. Tema: ${prompt}.`,
-          },
-        ],
-      }),
-    });
-
-    let caption = "🍿 ¡Palomitas gourmet que enamoran! ✨\n\nGuarda este post para después 📌\n\n#PalomitasGourmet #Popcorn #Emprendimiento";
-    if (captionResponse.ok) {
-      const captionData = await captionResponse.json();
-      caption = captionData.choices?.[0]?.message?.content || caption;
+    if (textResponse.ok) {
+      const textData = await textResponse.json();
+      const raw = textData.choices?.[0]?.message?.content || "";
+      try {
+        // Extract JSON from response (might have markdown wrapping)
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          headline = parsed.headline || headline;
+          subtitle = parsed.subtitle || subtitle;
+          caption = parsed.caption || caption;
+        }
+      } catch {
+        console.error("Failed to parse text response:", raw.substring(0, 500));
+      }
     }
 
-    return new Response(JSON.stringify({ imageUrl, caption }), {
+    return new Response(JSON.stringify({ imageUrl, headline, subtitle, caption }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

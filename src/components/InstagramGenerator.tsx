@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Sparkles, Download, Copy, Check, Loader2, Wand2, Lightbulb, Tag, BookOpen, Heart, ArrowLeftRight, Layers } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,35 +14,35 @@ const POST_TYPES = [
   { id: "promo", label: "Promoción", icon: Tag, desc: "Oferta, descuento o novedad", color: "text-green-400" },
   { id: "recipe", label: "Receta", icon: BookOpen, desc: "Receta o ingredientes", color: "text-orange-400" },
   { id: "motivational", label: "Inspiración", icon: Heart, desc: "Frase motivacional", color: "text-pink-400" },
-  { id: "beforeAfter", label: "Antes/Después", icon: ArrowLeftRight, desc: "Transformación del producto", color: "text-blue-400" },
+  { id: "beforeAfter", label: "Antes/Después", icon: ArrowLeftRight, desc: "Transformação do produto", color: "text-blue-400" },
   { id: "carousel", label: "Portada Carrusel", icon: Layers, desc: "Cover de carrusel", color: "text-purple-400" },
 ];
 
 const PROMPTS: Record<string, string[]> = {
   tip: [
-    "3 tips para conservar tus palomitas frescas por más tiempo",
-    "Cómo elegir el mejor maíz para palomitas gourmet",
+    "3 tips para conservar tus palomitas frescas",
     "El secreto de la caramelización perfecta",
+    "Cómo elegir el mejor maíz mushroom",
   ],
   promo: [
     "Nuevo sabor de temporada: Fresa con chocolate",
     "Promoción 2x1 en palomitas de Nutella",
-    "Pack regalo para San Valentín",
+    "Pack regalo especial de temporada",
   ],
   recipe: [
     "Receta de palomitas de Oreo paso a paso",
-    "Cómo hacer palomitas de leche nido en casa",
+    "Cómo hacer palomitas de leche nido",
     "Ingredientes para palomitas de coco y chocolate",
   ],
   motivational: [
     "Emprender con palomitas gourmet es posible",
     "De mi cocina a un negocio rentable",
-    "Cada palomita cuenta: la constancia es la clave",
+    "La constancia es la clave del éxito",
   ],
   beforeAfter: [
     "De maíz simple a palomitas gourmet premium",
+    "Transformación del sabor con caramelo",
     "Antes: palomitas normales. Después: obra de arte",
-    "Transformación de sabor: antes y después del caramelo",
   ],
   carousel: [
     "5 errores al emprender con palomitas",
@@ -51,13 +51,180 @@ const PROMPTS: Record<string, string[]> = {
   ],
 };
 
+interface PostResult {
+  imageUrl: string;
+  headline: string;
+  subtitle: string;
+  caption: string;
+}
+
+const OVERLAY_STYLES: Record<string, {
+  bgOverlay: string;
+  headlineColor: string;
+  subtitleColor: string;
+  brandColor: string;
+  accentColor: string;
+}> = {
+  vibrant: {
+    bgOverlay: "rgba(0,0,0,0.45)",
+    headlineColor: "#FFFFFF",
+    subtitleColor: "#F0F0F0",
+    brandColor: "#FF4444",
+    accentColor: "#FF6B35",
+  },
+  elegant: {
+    bgOverlay: "rgba(0,0,0,0.55)",
+    headlineColor: "#F5E6C8",
+    subtitleColor: "#D4C5A9",
+    brandColor: "#C8A96E",
+    accentColor: "#8B7355",
+  },
+  minimal: {
+    bgOverlay: "rgba(255,255,255,0.75)",
+    headlineColor: "#1A1A1A",
+    subtitleColor: "#444444",
+    brandColor: "#E63946",
+    accentColor: "#457B9D",
+  },
+  rustic: {
+    bgOverlay: "rgba(30,15,5,0.5)",
+    headlineColor: "#FFF8E7",
+    subtitleColor: "#E8D5B7",
+    brandColor: "#D4A373",
+    accentColor: "#8B5E3C",
+  },
+};
+
+// Render the composite post to a canvas and return data URL
+const renderPostToCanvas = (
+  img: HTMLImageElement,
+  headline: string,
+  subtitle: string,
+  style: string,
+): string => {
+  const size = 1080;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+
+  // Draw background image (cover fit)
+  const imgRatio = img.naturalWidth / img.naturalHeight;
+  let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+  if (imgRatio > 1) {
+    sx = (img.naturalWidth - img.naturalHeight) / 2;
+    sw = img.naturalHeight;
+  } else {
+    sy = (img.naturalHeight - img.naturalWidth) / 2;
+    sh = img.naturalWidth;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+
+  const colors = OVERLAY_STYLES[style] || OVERLAY_STYLES.vibrant;
+  const isMinimal = style === "minimal";
+
+  // Overlay gradient
+  if (isMinimal) {
+    // Bottom white gradient for minimal
+    const grad = ctx.createLinearGradient(0, size * 0.3, 0, size);
+    grad.addColorStop(0, "rgba(255,255,255,0)");
+    grad.addColorStop(0.4, "rgba(255,255,255,0.85)");
+    grad.addColorStop(1, "rgba(255,255,255,0.95)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  } else {
+    // Dark gradient from bottom
+    const grad = ctx.createLinearGradient(0, size * 0.15, 0, size);
+    grad.addColorStop(0, "rgba(0,0,0,0)");
+    grad.addColorStop(0.5, "rgba(0,0,0,0.4)");
+    grad.addColorStop(1, "rgba(0,0,0,0.85)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+
+    // Top subtle gradient
+    const topGrad = ctx.createLinearGradient(0, 0, 0, size * 0.25);
+    topGrad.addColorStop(0, "rgba(0,0,0,0.4)");
+    topGrad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = topGrad;
+    ctx.fillRect(0, 0, size, size * 0.25);
+  }
+
+  // Accent bar at top
+  ctx.fillStyle = colors.brandColor;
+  ctx.fillRect(60, 60, 60, 6);
+
+  // Brand name at top
+  ctx.font = "600 28px 'DM Sans', Arial, sans-serif";
+  ctx.fillStyle = colors.brandColor;
+  ctx.textAlign = "left";
+  ctx.fillText("PALOMITAS REDONDITAS", 60, 104);
+
+  // Headline - word wrap
+  ctx.font = "bold 72px 'Arial Black', 'Bebas Neue', Impact, sans-serif";
+  ctx.fillStyle = colors.headlineColor;
+  ctx.textAlign = "left";
+
+  const maxWidth = size - 120;
+  const headlineLines = wrapText(ctx, headline.toUpperCase(), maxWidth);
+  const headlineY = size - 220 - (headlineLines.length - 1) * 80;
+  headlineLines.forEach((line, i) => {
+    // Text shadow
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillText(line, 63, headlineY + i * 80 + 3);
+    ctx.fillStyle = colors.headlineColor;
+    ctx.fillText(line, 60, headlineY + i * 80);
+  });
+
+  // Subtitle
+  ctx.font = "400 32px 'DM Sans', Arial, sans-serif";
+  ctx.fillStyle = colors.subtitleColor;
+  const subY = headlineY + headlineLines.length * 80 + 10;
+  const subtitleLines = wrapText(ctx, subtitle, maxWidth);
+  subtitleLines.forEach((line, i) => {
+    ctx.fillText(line, 60, subY + i * 40);
+  });
+
+  // Bottom accent line
+  ctx.fillStyle = colors.brandColor;
+  ctx.fillRect(60, size - 60, size - 120, 4);
+
+  // Bottom brand tag
+  ctx.font = "500 22px 'DM Sans', Arial, sans-serif";
+  ctx.fillStyle = colors.subtitleColor;
+  ctx.textAlign = "right";
+  ctx.fillText("@palomitasredonditas", size - 60, size - 28);
+
+  return canvas.toDataURL("image/png");
+};
+
+const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines;
+};
+
 const InstagramGenerator = () => {
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState("vibrant");
   const [postType, setPostType] = useState("tip");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ imageUrl: string; caption: string } | null>(null);
+  const [result, setResult] = useState<PostResult | null>(null);
+  const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const generate = async () => {
     if (!prompt.trim()) {
@@ -66,6 +233,7 @@ const InstagramGenerator = () => {
     }
     setLoading(true);
     setResult(null);
+    setCompositeUrl(null);
     try {
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/instagram-generator`,
@@ -82,8 +250,22 @@ const InstagramGenerator = () => {
         const err = await resp.json();
         throw new Error(err.error || "Error al generar");
       }
-      const data = await resp.json();
+      const data: PostResult = await resp.json();
       setResult(data);
+
+      // Composite image with text overlay via canvas
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const composite = renderPostToCanvas(img, data.headline, data.subtitle, style);
+        setCompositeUrl(composite);
+      };
+      img.onerror = () => {
+        // If CORS fails on loading, just show raw image
+        setCompositeUrl(data.imageUrl);
+      };
+      img.src = data.imageUrl;
+
       toast.success("¡Post generado! 🎉");
     } catch (e: any) {
       toast.error(e.message || "Error al generar el post");
@@ -92,24 +274,25 @@ const InstagramGenerator = () => {
     }
   };
 
-  const copyCaption = () => {
+  const copyCaption = useCallback(() => {
     if (!result?.caption) return;
     navigator.clipboard.writeText(result.caption);
     setCopied(true);
     toast.success("Caption copiado al portapapeles");
     setTimeout(() => setCopied(false), 2000);
-  };
+  }, [result]);
 
-  const downloadImage = () => {
-    if (!result?.imageUrl) return;
+  const downloadImage = useCallback(() => {
+    const url = compositeUrl || result?.imageUrl;
+    if (!url) return;
     const link = document.createElement("a");
-    link.href = result.imageUrl;
+    link.href = url;
     link.download = `palomitas-post-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     toast.success("Imagen descargada");
-  };
+  }, [compositeUrl, result]);
 
   const currentPrompts = PROMPTS[postType] || PROMPTS.tip;
 
@@ -125,7 +308,7 @@ const InstagramGenerator = () => {
           CREA POSTS PROFESIONALES
         </h3>
         <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-          Posts con diseño, texto y legendas listos para publicar. Como si tuvieras un diseñador profesional.
+          Imagen + texto con diseño profesional + caption listos para publicar
         </p>
       </div>
 
@@ -187,8 +370,6 @@ const InstagramGenerator = () => {
           placeholder="Ej: 3 tips para conservar tus palomitas frescas por más tiempo..."
           className="w-full min-h-[90px] p-4 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none text-sm"
         />
-
-        {/* Quick prompts */}
         <div className="flex flex-wrap gap-2">
           {currentPrompts.map((p) => (
             <button
@@ -223,17 +404,17 @@ const InstagramGenerator = () => {
 
       {loading && (
         <p className="text-center text-muted-foreground text-sm animate-pulse">
-          Diseñando imagen con texto + generando caption... esto puede tomar unos segundos ⏳
+          Generando imagen + texto con tipografía perfecta... ⏳
         </p>
       )}
 
       {/* Result */}
-      {result && (
+      {(compositeUrl || result) && (
         <div className="space-y-6 animate-fade-in">
-          {/* Image preview */}
+          {/* Composite image preview */}
           <div className="relative group rounded-xl overflow-hidden border border-border bg-card shadow-2xl">
             <img
-              src={result.imageUrl}
+              src={compositeUrl || result?.imageUrl}
               alt="Post de Instagram generado"
               className="w-full aspect-square object-cover"
             />
@@ -249,26 +430,28 @@ const InstagramGenerator = () => {
           </div>
 
           {/* Caption */}
-          <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-display text-lg tracking-wider text-foreground">CAPTION PARA EL POST</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Copia y pega en la descripción de Instagram</p>
+          {result?.caption && (
+            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-display text-lg tracking-wider text-foreground">CAPTION PARA INSTAGRAM</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">Copia y pega en la descripción del post</p>
+                </div>
+                <button
+                  onClick={copyCaption}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? "¡Copiado!" : "Copiar"}
+                </button>
               </div>
-              <button
-                onClick={copyCaption}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 transition-colors"
-              >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? "¡Copiado!" : "Copiar"}
-              </button>
+              <div className="bg-secondary/50 rounded-lg p-4">
+                <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                  {result.caption}
+                </p>
+              </div>
             </div>
-            <div className="bg-secondary/50 rounded-lg p-4">
-              <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
-                {result.caption}
-              </p>
-            </div>
-          </div>
+          )}
 
           {/* Action buttons */}
           <div className="flex gap-3">
@@ -280,7 +463,7 @@ const InstagramGenerator = () => {
               DESCARGAR IMAGEN
             </button>
             <button
-              onClick={() => { setResult(null); setPrompt(""); }}
+              onClick={() => { setResult(null); setCompositeUrl(null); setPrompt(""); }}
               className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-display tracking-wider flex items-center justify-center gap-2 hover:bg-secondary/80 transition-colors"
             >
               <Sparkles className="w-5 h-5" />
@@ -289,6 +472,8 @@ const InstagramGenerator = () => {
           </div>
         </div>
       )}
+
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 };
