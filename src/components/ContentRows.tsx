@@ -4,7 +4,7 @@ import { courseFolders, type CourseFolder, type Lesson } from "@/data/courseData
 
 import coverEmpieza from "@/assets/cover-empieza.jpg";
 import coverPdfReal from "@/assets/cover-pdf-real.jpg";
-import coverVideo from "@/assets/cover-receitas-video.jpg";
+import coverVideo from "@/assets/cover-receitas-doces.png";
 import coverCalculadora from "@/assets/cover-calculadora.jpg";
 import coverAgridulces from "@/assets/cover-agridulces.jpg";
 import coverBonusInstagram from "@/assets/cover-bonus-instagram.jpg";
