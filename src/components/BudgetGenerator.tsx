@@ -254,9 +254,27 @@ const BudgetGenerator = () => {
       { align: "center" }
     );
 
-    // Save as PDF (opens on any device)
+    // Save as PDF (compatible with all devices including mobile)
     const fileName = `Presupuesto_${(clientName || "cliente").replace(/\s+/g, "_")}.pdf`;
-    doc.save(fileName);
+    try {
+      const pdfBlob = doc.output("blob");
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      // Fallback: if download attribute not supported, open in new tab
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      }, 1000);
+    } catch (e) {
+      // Ultimate fallback: open PDF in new window
+      const pdfDataUri = doc.output("datauristring");
+      window.open(pdfDataUri, "_blank");
+    }
   };
 
   const isValid = items.some((i) => i.product.trim() && i.unitPrice > 0);
