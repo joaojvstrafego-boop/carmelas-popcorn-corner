@@ -26,6 +26,25 @@
 </head>
 
   <body>
+    <script>
+      // One-time cache purge to fix stale/black images (v2)
+      var CACHE_VERSION = 'v2';
+      if (localStorage.getItem('cache-purged') !== CACHE_VERSION) {
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            names.forEach(function(name) { caches.delete(name); });
+          });
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            registrations.forEach(function(r) { r.unregister(); });
+          });
+        }
+        localStorage.setItem('cache-purged', CACHE_VERSION);
+        // Reload after clearing to get fresh assets
+        setTimeout(function() { location.reload(); }, 500);
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

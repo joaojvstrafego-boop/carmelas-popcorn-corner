@@ -285,13 +285,20 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
           </button>
         </div>
       </div>
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full flex flex-col items-center justify-center">
         <iframe
           src={`https://docs.google.com/gview?url=${encodeURIComponent('https://carmelas-popcorn-corner.lovable.app' + pdfUrl)}&embedded=true`}
           className="w-full h-full border-0"
           title={lesson.title}
           allowFullScreen
         />
+        <p className="text-xs text-muted-foreground py-2">
+          ¿No se ve el PDF?{" "}
+          <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+            Ábrelo aquí
+          </a>{" "}
+          o descárgalo con el botón de arriba.
+        </p>
       </div>
     </div>
   );
