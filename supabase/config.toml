@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.instagram-generator]
 verify_jwt = false
+
+[functions.admin-export]
+verify_jwt = false

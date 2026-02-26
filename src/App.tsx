@@ -9,6 +9,7 @@ import type { Session } from "@supabase/supabase-js";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import AdminExport from "./pages/AdminExport";
 
 const queryClient = new QueryClient();
 
@@ -91,6 +92,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/admin/export" element={<AdminExport />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
