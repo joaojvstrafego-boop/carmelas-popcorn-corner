@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Users, HardDrive, Zap, ArrowLeft, Loader2, KeyRound, ScrollText, Database } from "lucide-react";
+import { Download, Users, HardDrive, Zap, ArrowLeft, Loader2, KeyRound, ScrollText, Database, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,7 +49,7 @@ const sections: ExportSection[] = [
   {
     type: "database",
     label: "Database / Tablas",
-    description: "Tablas del esquema público, columnas y estructura",
+    description: "Estructura SQL de las tablas para migración",
     icon: <Database className="h-6 w-6" />,
   },
 ];
@@ -82,6 +82,8 @@ function downloadCSV(csv: string, filename: string) {
 
 export default function AdminExport() {
   const [loading, setLoading] = useState<ExportType | null>(null);
+  const [sqlOutput, setSqlOutput] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -107,6 +109,27 @@ export default function AdminExport() {
         return;
       }
 
+      // For database type, show SQL instead of downloading CSV
+      if (type === "database") {
+        const allSql = rows
+          .map((r: any) => r.sql)
+          .filter(Boolean)
+          .join("\n\n");
+        if (allSql) {
+          setSqlOutput(allSql);
+          toast({
+            title: "SQL generado ✓",
+            description: `${rows.length} tabla(s) encontrada(s). Copia el SQL abajo.`,
+          });
+        } else {
+          toast({
+            title: "Sin tablas",
+            description: "No se encontraron tablas en el esquema público.",
+          });
+        }
+        return;
+      }
+
       const csv = convertToCSV(rows);
       const date = new Date().toISOString().slice(0, 10);
       downloadCSV(csv, `${type}_export_${date}.csv`);
@@ -128,8 +151,19 @@ export default function AdminExport() {
 
   const handleExportAll = async () => {
     for (const section of sections) {
-      await handleExport(section.type);
+      if (section.type !== "database") {
+        await handleExport(section.type);
+      }
     }
+    await handleExport("database");
+  };
+
+  const handleCopySQL = async () => {
+    if (!sqlOutput) return;
+    await navigator.clipboard.writeText(sqlOutput);
+    setCopied(true);
+    toast({ title: "SQL copiado ✓" });
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -183,15 +217,44 @@ export default function AdminExport() {
                 >
                   {loading === section.type ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : section.type === "database" ? (
+                    <Database className="h-4 w-4" />
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  Exportar CSV
+                  {section.type === "database" ? "Generar SQL" : "Exportar CSV"}
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {sqlOutput && (
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center justify-between text-lg font-body font-semibold text-foreground">
+                <span className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  SQL de Migración
+                </span>
+                <Button
+                  onClick={handleCopySQL}
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? "Copiado!" : "Copiar SQL"}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="bg-secondary rounded-lg p-4 overflow-x-auto text-sm text-foreground font-mono whitespace-pre-wrap max-h-[500px] overflow-y-auto">
+                {sqlOutput}
+              </pre>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
