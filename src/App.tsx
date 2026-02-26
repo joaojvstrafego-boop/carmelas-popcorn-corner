@@ -16,14 +16,35 @@ const App = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check for PWA updates periodically
+  // One-time hard reset: remove old Service Workers/caches that were causing black media
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        const interval = setInterval(() => registration.update(), 2 * 60 * 1000);
-        return () => clearInterval(interval);
-      });
+    const CACHE_RESET_VERSION = "v3-hard-reset";
+
+    if (localStorage.getItem("cache-reset-version") === CACHE_RESET_VERSION) {
+      return;
     }
+
+    const resetCaching = async () => {
+      try {
+        localStorage.setItem("cache-reset-version", CACHE_RESET_VERSION);
+
+        if ("serviceWorker" in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+
+        if ("caches" in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+        }
+
+        window.location.reload();
+      } catch {
+        // no-op: avoid blocking app usage if cleanup fails
+      }
+    };
+
+    void resetCaching();
   }, []);
 
   useEffect(() => {

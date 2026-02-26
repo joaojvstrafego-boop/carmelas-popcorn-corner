@@ -287,7 +287,7 @@ const PdfViewer = ({ lesson, onClose }: { lesson: Lesson; onClose: () => void })
       </div>
       <div className="flex-1 w-full flex flex-col items-center justify-center">
         <iframe
-          src={`https://docs.google.com/gview?url=${encodeURIComponent('https://carmelas-popcorn-corner.lovable.app' + pdfUrl)}&embedded=true`}
+          src={pdfUrl}
           className="w-full h-full border-0"
           title={lesson.title}
           allowFullScreen
@@ -426,7 +426,7 @@ const FolderView = ({
               </a>
             </div>
             <iframe
-              src={`https://docs.google.com/gview?url=${encodeURIComponent('https://carmelas-popcorn-corner.lovable.app/PALOMITAS_REDONDITAS.pdf')}&embedded=true`}
+              src="/PALOMITAS_REDONDITAS.pdf"
               className="w-full h-[70vh] rounded-lg border border-border"
               title="Recetas en PDF"
               allowFullScreen
