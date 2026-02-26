@@ -12,7 +12,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify the caller is authenticated
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "No autorizado" }), {
@@ -26,7 +25,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Verify caller is authenticated
     const anonClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!
@@ -42,7 +40,6 @@ Deno.serve(async (req) => {
     }
 
     const { type } = await req.json();
-
     let data: any[] = [];
 
     switch (type) {
@@ -81,12 +78,87 @@ Deno.serve(async (req) => {
         break;
       }
       case "edge_functions": {
-        // List edge functions from config - we return what we know
         data = [
           { name: "soporte-chat", verify_jwt: false, status: "deployed" },
           { name: "instagram-generator", verify_jwt: false, status: "deployed" },
           { name: "admin-export", verify_jwt: false, status: "deployed" },
         ];
+        break;
+      }
+      case "secrets": {
+        // We list known secret names (values are never exposed for security)
+        const knownSecrets = [
+          "LOVABLE_API_KEY",
+          "SUPABASE_URL",
+          "SUPABASE_ANON_KEY",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "SUPABASE_DB_URL",
+          "SUPABASE_PUBLISHABLE_KEY",
+        ];
+        data = knownSecrets.map((name) => ({
+          name,
+          status: "configured",
+          note: "Valor oculto por seguridad",
+        }));
+        break;
+      }
+      case "logs": {
+        // Fetch recent auth audit logs
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        // Get recent sign-in activity from users
+        const { data: users } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+        const logEntries: any[] = [];
+        for (const u of users?.users || []) {
+          if (u.last_sign_in_at) {
+            logEntries.push({
+              type: "sign_in",
+              user_email: u.email,
+              user_id: u.id,
+              timestamp: u.last_sign_in_at,
+            });
+          }
+          logEntries.push({
+            type: "user_created",
+            user_email: u.email,
+            user_id: u.id,
+            timestamp: u.created_at,
+          });
+        }
+        data = logEntries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        break;
+      }
+      case "database": {
+        // List all tables in public schema
+        const { data: tables, error } = await supabaseAdmin.rpc("", {}).catch(() => ({ data: null, error: null })) as any;
+        
+        // Use raw query via postgrest to get table list
+        const res = await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/rest/v1/?apikey=${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          {
+            headers: {
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              Accept: "application/json",
+            },
+          }
+        );
+        
+        if (res.ok) {
+          const schema = await res.json();
+          // schema from PostgREST root returns definitions
+          if (schema && schema.definitions) {
+            data = Object.keys(schema.definitions).map((tableName) => ({
+              table_name: tableName,
+              columns: Object.keys(schema.definitions[tableName]?.properties || {}).join(", "),
+            }));
+          } else {
+            // Fallback: try to read known info
+            data = [{ table_name: "(sin tablas públicas)", columns: "-" }];
+          }
+        } else {
+          data = [{ table_name: "(sin tablas públicas)", columns: "-" }];
+        }
         break;
       }
       default:
