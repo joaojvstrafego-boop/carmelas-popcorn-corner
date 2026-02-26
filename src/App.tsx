@@ -16,6 +16,30 @@ const App = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Force PWA update: clear old caches and reload when new version is available
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener("statechange", () => {
+              if (newWorker.state === "activated") {
+                // Clear all caches and reload
+                caches.keys().then((names) => {
+                  names.forEach((name) => caches.delete(name));
+                });
+                window.location.reload();
+              }
+            });
+          }
+        });
+        // Check for updates every 60 seconds
+        setInterval(() => registration.update(), 60 * 1000);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
