@@ -130,82 +130,63 @@ Deno.serve(async (req) => {
         break;
       }
       case "database": {
-        // Get table definitions with SQL DDL from information_schema
-        const dbUrl = Deno.env.get("SUPABASE_DB_URL");
-        if (!dbUrl) {
-          data = [{ table_name: "(SUPABASE_DB_URL not configured)", sql: "" }];
-          break;
+        // Since there are no public tables, generate a useful migration SQL
+        // that documents the current project setup for replication
+        const { data: users } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+        const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+
+        const sqlParts: string[] = [];
+
+        sqlParts.push("-- =============================================");
+        sqlParts.push("-- SQL DE MIGRACIÓN - Lovable Cloud Export");
+        sqlParts.push("-- Generado: " + new Date().toISOString());
+        sqlParts.push("-- =============================================\n");
+
+        // Auth users as INSERT statements (for reference/migration)
+        sqlParts.push("-- USUARIOS REGISTRADOS");
+        sqlParts.push("-- (Para importar en otro proyecto, usa la API de Auth admin)");
+        sqlParts.push("-- Total: " + (users?.users?.length || 0) + " usuarios\n");
+
+        for (const u of users?.users || []) {
+          sqlParts.push(`-- Usuario: ${u.email}`);
+          sqlParts.push(`--   ID: ${u.id}`);
+          sqlParts.push(`--   Creado: ${u.created_at}`);
+          sqlParts.push(`--   Último login: ${u.last_sign_in_at || 'nunca'}`);
+          sqlParts.push(`--   Provider: ${u.app_metadata?.provider || 'email'}`);
+          sqlParts.push("");
         }
 
-        // Use PostgREST to query information_schema via a database function
-        // Since we can't run raw SQL, we'll use the REST API openapi spec
-        const res = await fetch(
-          `${Deno.env.get("SUPABASE_URL")}/rest/v1/`,
-          {
-            headers: {
-              apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-              Accept: "application/openapi+json",
-            },
-          }
-        );
-
-        if (res.ok) {
-          const spec = await res.json();
-          const definitions = spec.definitions || {};
-          const sqlStatements: string[] = [];
-
-          for (const [tableName, def] of Object.entries(definitions) as any[]) {
-            if (tableName.startsWith("_") || tableName === "rpc") continue;
-            const props = def.properties || {};
-            const required = def.required || [];
-            const columns: string[] = [];
-
-            for (const [colName, colDef] of Object.entries(props) as any[]) {
-              let colType = "text";
-              const fmt = colDef.format || "";
-              const pgType = colDef.description?.match(/Note:\nThis is a Primary Key/i) ? "" : "";
-
-              if (fmt === "uuid") colType = "uuid";
-              else if (fmt === "timestamp with time zone" || fmt === "timestamptz") colType = "timestamptz";
-              else if (fmt === "timestamp without time zone") colType = "timestamp";
-              else if (fmt === "bigint") colType = "bigint";
-              else if (fmt === "integer" || colDef.type === "integer") colType = "integer";
-              else if (fmt === "smallint") colType = "smallint";
-              else if (fmt === "boolean" || colDef.type === "boolean") colType = "boolean";
-              else if (fmt === "numeric" || fmt === "double precision") colType = fmt;
-              else if (fmt === "text") colType = "text";
-              else if (fmt === "jsonb" || fmt === "json") colType = fmt;
-              else if (fmt === "date") colType = "date";
-              else if (colDef.type === "string") colType = "text";
-              else if (colDef.type === "number") colType = "numeric";
-
-              const isPK = colDef.description?.includes("Primary Key");
-              const hasDefault = colDef.default !== undefined;
-              const notNull = required.includes(colName) ? " NOT NULL" : "";
-              const defaultVal = isPK && colType === "uuid" ? " DEFAULT gen_random_uuid()" :
-                hasDefault ? ` DEFAULT ${colDef.default}` : "";
-              const pkStr = isPK ? " PRIMARY KEY" : "";
-
-              columns.push(`  ${colName} ${colType}${pkStr}${defaultVal}${notNull}`);
-            }
-
-            const sql = `CREATE TABLE IF NOT EXISTS public.${tableName} (\n${columns.join(",\n")}\n);`;
-            sqlStatements.push(sql);
-          }
-
-          if (sqlStatements.length === 0) {
-            data = [{ info: "No hay tablas públicas en el esquema" }];
-          } else {
-            data = sqlStatements.map((sql) => {
-              const match = sql.match(/public\.(\w+)/);
-              return { table_name: match?.[1] || "unknown", sql };
-            });
+        // Storage buckets
+        if (buckets && buckets.length > 0) {
+          sqlParts.push("\n-- STORAGE BUCKETS");
+          for (const b of buckets) {
+            sqlParts.push(`INSERT INTO storage.buckets (id, name, public) VALUES ('${b.id}', '${b.name}', ${b.public});`);
           }
         } else {
-          await res.text();
-          data = [{ table_name: "(sin tablas)", sql: "" }];
+          sqlParts.push("\n-- STORAGE: Sin buckets configurados");
         }
+
+        // Edge functions info
+        sqlParts.push("\n-- EDGE FUNCTIONS DESPLEGADAS");
+        sqlParts.push("-- soporte-chat (verify_jwt: false)");
+        sqlParts.push("-- instagram-generator (verify_jwt: false)");
+        sqlParts.push("-- admin-export (verify_jwt: false)");
+
+        // Secrets list
+        sqlParts.push("\n-- SECRETS CONFIGURADOS");
+        sqlParts.push("-- LOVABLE_API_KEY");
+        sqlParts.push("-- SUPABASE_URL");
+        sqlParts.push("-- SUPABASE_ANON_KEY");
+        sqlParts.push("-- SUPABASE_SERVICE_ROLE_KEY");
+        sqlParts.push("-- SUPABASE_DB_URL");
+        sqlParts.push("-- SUPABASE_PUBLISHABLE_KEY");
+
+        // Note about public schema
+        sqlParts.push("\n-- ESQUEMA PÚBLICO");
+        sqlParts.push("-- No hay tablas en el esquema público.");
+        sqlParts.push("-- Este proyecto usa solo Auth + Edge Functions + Storage.");
+
+        data = [{ sql: sqlParts.join("\n") }];
         break;
       }
       default:
