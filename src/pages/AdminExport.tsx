@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Users, HardDrive, Zap, ArrowLeft, Loader2, KeyRound, ScrollText, Database, Copy, Check } from "lucide-react";
+import { Download, Users, HardDrive, Zap, ArrowLeft, Loader2, KeyRound, ScrollText, Database, Copy, Check, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -85,8 +85,32 @@ export default function AdminExport() {
   const [sqlOutput, setSqlOutput] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
+  const [sqlLoading, setSqlLoading] = useState(false);
   const { toast } = useToast();
 
+  const fetchSQL = useCallback(async () => {
+    setSqlLoading(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const { data, error } = await supabase.functions.invoke("admin-export", {
+        body: { type: "database" },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (error) throw error;
+      const rows = data?.data || [];
+      const allSql = rows.map((r: any) => r.sql).filter(Boolean).join("\n\n");
+      setSqlOutput(allSql || "-- No hay tablas públicas en el esquema");
+    } catch (err: any) {
+      setSqlOutput("-- Error al cargar SQL: " + (err.message || "desconocido"));
+    } finally {
+      setSqlLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSQL();
+  }, [fetchSQL]);
   const handleExport = async (type: ExportType) => {
     setLoading(type);
     try {
@@ -229,32 +253,48 @@ export default function AdminExport() {
           ))}
         </div>
 
-        {sqlOutput && (
-          <Card className="bg-card border-border">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center justify-between text-lg font-body font-semibold text-foreground">
-                <span className="flex items-center gap-2">
-                  <Database className="h-5 w-5 text-primary" />
-                  SQL de Migración
-                </span>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between text-lg font-body font-semibold text-foreground">
+              <span className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-primary" />
+                SQL de Migración — Copiar y pegar en otro database
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  onClick={fetchSQL}
+                  variant="ghost"
+                  size="sm"
+                  disabled={sqlLoading}
+                  className="gap-1"
+                >
+                  <RefreshCw className={`h-4 w-4 ${sqlLoading ? "animate-spin" : ""}`} />
+                </Button>
                 <Button
                   onClick={handleCopySQL}
                   variant="outline"
                   size="sm"
                   className="gap-2"
+                  disabled={!sqlOutput}
                 >
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   {copied ? "Copiado!" : "Copiar SQL"}
                 </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="bg-secondary rounded-lg p-4 overflow-x-auto text-sm text-foreground font-mono whitespace-pre-wrap max-h-[500px] overflow-y-auto">
-                {sqlOutput}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {sqlLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <pre className="bg-secondary rounded-lg p-4 overflow-x-auto text-sm text-foreground font-mono whitespace-pre-wrap max-h-[500px] overflow-y-auto select-all">
+                {sqlOutput || "-- Cargando..."}
               </pre>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
