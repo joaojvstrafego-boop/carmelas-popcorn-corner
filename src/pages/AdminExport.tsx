@@ -2,11 +2,11 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Users, HardDrive, Zap, ArrowLeft, Loader2 } from "lucide-react";
+import { Download, Users, HardDrive, Zap, ArrowLeft, Loader2, KeyRound, ScrollText, Database } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-type ExportType = "users" | "storage" | "edge_functions";
+type ExportType = "users" | "storage" | "edge_functions" | "secrets" | "logs" | "database";
 
 interface ExportSection {
   type: ExportType;
@@ -33,6 +33,24 @@ const sections: ExportSection[] = [
     label: "Edge Functions",
     description: "Funciones desplegadas, estado, configuración JWT",
     icon: <Zap className="h-6 w-6" />,
+  },
+  {
+    type: "secrets",
+    label: "Secrets",
+    description: "Nombres de secrets configurados (valores ocultos por seguridad)",
+    icon: <KeyRound className="h-6 w-6" />,
+  },
+  {
+    type: "logs",
+    label: "Logs / Actividad",
+    description: "Registros de login, creación de cuentas y actividad reciente",
+    icon: <ScrollText className="h-6 w-6" />,
+  },
+  {
+    type: "database",
+    label: "Database / Tablas",
+    description: "Tablas del esquema público, columnas y estructura",
+    icon: <Database className="h-6 w-6" />,
   },
 ];
 
@@ -108,6 +126,12 @@ export default function AdminExport() {
     }
   };
 
+  const handleExportAll = async () => {
+    for (const section of sections) {
+      await handleExport(section.type);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -120,7 +144,7 @@ export default function AdminExport() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-display tracking-wide text-foreground">
               Exportar Datos
             </h1>
@@ -128,6 +152,15 @@ export default function AdminExport() {
               Descarga los datos del backend en formato CSV
             </p>
           </div>
+          <Button
+            onClick={handleExportAll}
+            disabled={loading !== null}
+            variant="outline"
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Exportar Todo
+          </Button>
         </div>
 
         <div className="grid gap-4">
