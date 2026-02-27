@@ -160,7 +160,8 @@ Deno.serve(async (req) => {
         if (buckets && buckets.length > 0) {
           sqlParts.push("\n-- STORAGE BUCKETS");
           for (const b of buckets) {
-            sqlParts.push(`INSERT INTO storage.buckets (id, name, public) VALUES ('${b.id}', '${b.name}', ${b.public});`);
+            const escapeSql = (str: string) => str.replace(/'/g, "''");
+            sqlParts.push(`INSERT INTO storage.buckets (id, name, public) VALUES ('${escapeSql(b.id)}', '${escapeSql(b.name)}', ${!!b.public});`);
           }
         } else {
           sqlParts.push("\n-- STORAGE: Sin buckets configurados");
