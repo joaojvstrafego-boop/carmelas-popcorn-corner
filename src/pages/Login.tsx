@@ -11,6 +11,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [success, setSuccess] = useState("");
+  const [isForgot, setIsForgot] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +21,24 @@ const Login = () => {
     setLoading(true);
 
     try {
-      if (isSignUp) {
+      if (isForgot) {
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-password`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+            body: JSON.stringify({ email, newPassword }),
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || "Error al cambiar la contraseña.");
+        } else {
+          setSuccess("¡Contraseña actualizada! Ya puedes iniciar sesión.");
+          setIsForgot(false);
+          setNewPassword("");
+        }
+      } else if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) {
           if (error.message.includes("already registered")) {
@@ -58,7 +77,7 @@ const Login = () => {
       {/* Login Card */}
       <div className="w-full max-w-sm bg-card rounded-xl p-6 border border-border mb-8">
         <h2 className="font-display text-2xl text-center text-foreground mb-6">
-          {isSignUp ? "CREAR CUENTA" : "INICIAR SESIÓN"}
+          {isForgot ? "CAMBIAR CONTRASEÑA" : isSignUp ? "CREAR CUENTA" : "INICIAR SESIÓN"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
@@ -68,26 +87,47 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <Input
-            type="password"
-            placeholder="Contraseña (mínimo 6 caracteres)"
-            value={password}
-            onChange={(e) => { setPassword(e.target.value); setError(""); }}
-            required
-            minLength={6}
-          />
+          {isForgot ? (
+            <Input
+              type="password"
+              placeholder="Nueva contraseña (mínimo 6 caracteres)"
+              value={newPassword}
+              onChange={(e) => { setNewPassword(e.target.value); setError(""); }}
+              required
+              minLength={6}
+            />
+          ) : (
+            <Input
+              type="password"
+              placeholder="Contraseña (mínimo 6 caracteres)"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setError(""); }}
+              required
+              minLength={6}
+            />
+          )}
           {error && <p className="text-destructive text-sm">{error}</p>}
           {success && <p className="text-accent text-sm">{success}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isSignUp ? "Crear cuenta" : "Entrar"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isForgot ? "Cambiar contraseña" : isSignUp ? "Crear cuenta" : "Entrar"}
           </Button>
         </form>
-        <button
-          onClick={() => { setIsSignUp(!isSignUp); setError(""); setSuccess(""); }}
-          className="text-muted-foreground text-sm text-center mt-4 w-full hover:text-foreground transition-colors"
-        >
-          {isSignUp ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate"}
-        </button>
+        <div className="flex flex-col items-center gap-2 mt-4">
+          {!isForgot && (
+            <button
+              onClick={() => { setIsSignUp(!isSignUp); setError(""); setSuccess(""); }}
+              className="text-muted-foreground text-sm hover:text-foreground transition-colors"
+            >
+              {isSignUp ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate"}
+            </button>
+          )}
+          <button
+            onClick={() => { setIsForgot(!isForgot); setError(""); setSuccess(""); }}
+            className="text-muted-foreground text-sm hover:text-foreground transition-colors"
+          >
+            {isForgot ? "← Volver al inicio de sesión" : "¿Olvidaste tu contraseña?"}
+          </button>
+        </div>
       </div>
 
       {/* Install Instructions */}
